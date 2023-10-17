@@ -1,3 +1,39 @@
-# bson-bench POC
+# bson-bench 
 
-This repo is a Proof of Concept of proposed the bson-bench library.
+This library provides functionality to install and run benchmarks against bson and bson-ext.
+
+## Usage
+
+```ts
+import { Suite } from 'bson-bench';
+
+const int32SerializationSuite = new Suite('int32Serialization')
+    .task({
+        documentPath: 'path/to/test/file0',
+        operation: 'serialize',
+        warmup: 100,
+        iterations: 100,
+        options: {},
+        library: 'bson@6.0.0'
+    })
+    .task({
+        documentPath: 'path/to/test/file1',
+        operation: 'serialize',
+        warmup: 100,
+        iterations: 100,
+        options: {},
+        library: 'bson@6.0.0'
+    })
+    .task({
+        documentPath: 'path/to/test/file2',
+        operation: 'serialize',
+        warmup: 100,
+        iterations: 100,
+        options: {},
+        library: 'bson@6.0.0'
+    });
+
+int32SerializationSuite.run()
+    .then(() => int32SerializationSuite.writeResults())
+    .then(() => console.log('complete'));
+```

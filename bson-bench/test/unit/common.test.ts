@@ -1,4 +1,5 @@
 import { expect } from "chai";
+import { sep } from "path";
 
 import { Package } from "../../lib/common";
 import { clearTestedDeps } from "../utils";
@@ -55,17 +56,31 @@ describe("common functionality", function () {
       );
 
       context("when given a local package", function () {
-        it("sets computedModuleName correctly");
+        it("sets computedModuleName correctly", function () {
+          if (!BSON_PATH) this.skip();
+          const pack = new Package(BSON_PATH);
+          expect(pack).to.haveOwnProperty(
+            "computedModuleName",
+            `bson-local-${BSON_PATH.replaceAll(sep, "_")}`,
+          );
+        });
       });
     });
 
     context("#check()", function () {
       context("when package is not installed", function () {
-        it("returns undefined", function () {});
+        it("returns undefined", function () {
+          const pack = new Package("bson@6");
+          expect(pack.check()).to.be.undefined;
+        });
       });
 
       context("when package is installed", function () {
-        it("returns the module");
+        it("returns the module", async function () {
+          const pack = new Package("bson@6.0.0");
+          await pack.install();
+          expect(pack.check()).to.not.be.undefined;
+        });
       });
     });
 

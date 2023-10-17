@@ -17,15 +17,23 @@ const BSON = require("bson");
 /**
  * @param result {BenchmarkResult}
  * */
-function sendResult(result) {
+function reportResultAndQuit(result) {
   if (process.send) process?.send({ type: "returnResult", result });
+  process.disconnect();
+  process.exit(0);
 }
 
 /**
  * @param error {Error}
  */
-function sendError(error) {
-  if (process.send) process.send({ type: "returnError", error });
+function reportErrorAndQuit(error) {
+  if (process.send)
+    process.send({
+      type: "returnError",
+      error,
+    });
+  process.disconnect();
+  process.exit(1);
 }
 
 /**
@@ -43,18 +51,38 @@ function run(bson, config) {
   switch (config.operation) {
     case "serialize":
       fn = bson.serialize;
-      size = BSON.serialize(doc).length;
+      try {
+        size = BSON.calculateObjectSize(doc);
+      } catch (e) {
+        const error = new Error("failed to calculate input object size");
+        error.cause = e;
+        reportErrorAndQuit(error);
+      }
       break;
     case "deserialize":
       fn = bson.deserialize;
-      doc = BSON.serialize(doc);
-      size = doc.length;
+      try {
+        doc = BSON.serialize(doc);
+      } catch (e) {
+        const error = new Error("failed to serialize input object");
+        error.cause = e;
+        reportErrorAndQuit(error);
+      }
       break;
     default:
-      sendError(new Error("unknown test type"));
-      process.exit(1);
+      reportErrorAndQuit(new Error("unknown test type"));
   }
 
+  // Check if we can successfully run function under test and report failure if not
+  try {
+    fn(doc, config.options);
+  } catch (e) {
+    const error = new Error("operation under test failed");
+    error.cause = e;
+    reportErrorAndQuit(error);
+  }
+
+  // Run warmup iterations
   for (let i = 0; i < config.warmup; i++) {
     fn(doc, config.options);
   }
@@ -67,10 +95,7 @@ function run(bson, config) {
     resultsMS.push(end - start);
   }
 
-  sendResult(new BenchmarkResult(resultsMS, size));
-
-  process.disconnect();
-  process.exit(0);
+  reportResultAndQuit(new BenchmarkResult(resultsMS, size));
 }
 
 /**
@@ -84,16 +109,12 @@ function listener(message) {
     try {
       bson = require(packageSpec.computedModuleName);
     } catch (error) {
-      sendError(error);
-      process.disconnect();
-      process.exit(1);
+      reportErrorAndQuit(error);
     }
 
     run(bson, message.benchmark);
   } else {
-    sendError(new Error(`unknown ipc message: ${message}`));
-    process.disconnect();
-    process.exit(1);
+    reportErrorAndQuit(new Error(`unknown ipc message: ${message}`));
   }
 }
 

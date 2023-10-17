@@ -96,8 +96,16 @@ export class Package {
     }
 
     // TODO: Capture stdout and stderr
+    const pathToNpm = path.join(
+      __dirname,
+      "..",
+      "node_modules",
+      "npm",
+      "bin",
+      "npm-cli.js",
+    );
     const npmInstallProcess = cp.exec(
-      `npx npm install ${this.computedModuleName}@${source} --no-save`,
+      `node ${pathToNpm} install ${this.computedModuleName}@${source} --no-save`,
       { encoding: "utf8" },
     );
 

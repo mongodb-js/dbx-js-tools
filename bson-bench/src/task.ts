@@ -27,8 +27,9 @@ export class Task {
     this.children = [];
     this.hasRun = false;
 
-    const fileName = path.basename(benchmarkSpec.documentPath, ".json");
-    this.taskName = `${fileName}-${benchmarkSpec.operation}`;
+    this.taskName = `${path.basename(this.benchmark.documentPath, "json")}_${
+      this.benchmark.operation
+    }_${this.benchmark.library}`;
   }
 
   getResults(): PerfSendResult {
@@ -52,26 +53,51 @@ export class Task {
     const maxThroughputMBps = throughputMBps[throughputMBps.length - 1];
     const minThroughputMBps = throughputMBps[0];
 
-    const testName = `${path.basename(this.benchmark.documentPath, "json")}_${
-      this.benchmark.operation
-    }_${this.benchmark.library}`;
-
-    const optionsWithNumericFields = Object.keys(this.benchmark.options).reduce(
-      (acc, key) => {
-        if (
-          typeof this.benchmark.options[key] === "boolean" ||
-          typeof this.benchmark.options[key] === "number"
-        ) {
-          acc[key] = Number(this.benchmark.options[key]);
+    const convertOptions = (o: any): any => {
+      const output = Object.create(null);
+      for (const key in o) {
+        // boolean options
+        switch (key) {
+          case "promoteValues":
+          case "promoteBuffers":
+          case "promoteLongs":
+          case "bsonRegExp":
+          case "allowObjectSmallerThanBufferSize":
+          case "useBigInt64":
+          case "evalFunctions":
+          case "cacheFunctions":
+          case "checkKeys":
+          case "ignoreUndefined":
+          case "serializeFunctions":
+            output[key] = Number(o[key]);
+            break;
+          // numeric options
+          case "index":
+            output[key] = o[key];
+            break;
+          // special cases
+          case "validation":
+            output["utf8Validation"] = /^bson-ext/.test(this.benchmark.library)
+              ? 1
+              : typeof o[key] === "boolean"
+              ? Number(o[key])
+              : 1;
+            break;
+          default:
+            output[key] =
+              typeof o[key] === "boolean" || typeof o[key] === "number"
+                ? Number(o[key])
+                : -1;
         }
-        return acc;
-      },
-      {} as any,
-    );
+      }
+
+      return output;
+    };
+    const optionsWithNumericFields = convertOptions(this.benchmark.options);
 
     const perfSendResults: PerfSendResult = {
       info: {
-        test_name: testName,
+        test_name: this.taskName,
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,
@@ -128,6 +154,7 @@ export class Task {
     // spawn child process
     const child = fork(`${__dirname}/base.js`, {
       stdio: ["inherit", "inherit", "inherit", "ipc"],
+      serialization: "advanced",
     });
     this.sendBenchmark(child);
     this.children.push(child);
