@@ -1,0 +1,191 @@
+import * as cp from "child_process";
+import { once } from "events";
+import * as fs from "fs/promises";
+import * as path from "path";
+
+// TODO: Should allow latest, betas and alphas
+// handle normal npm package regex
+export const NPM_PACKAGE_REGEX =
+  /(bson-ext|bson)@((\d+(\.\d+)?(\.\d+)?)|latest)/;
+// handle git tags/commits
+export const GIT_PACKAGE_REGEX = /(bson-ext|bson)#(.+)/;
+// handle local package
+export const LOCAL_PACKAGE_REGEX = /(bson-ext|bson):(.+)/;
+
+/**
+ * The Package class represents the bson or bson-ext package to be tested
+ * This package can be an npm package, a git repository or a local package
+ **/
+export class Package {
+  type: "npm" | "git" | "local";
+  // bson library to install
+  library: "bson" | "bson-ext";
+  computedModuleName: string;
+  // semver version specification
+  npmVersion?: string;
+  // git commit hash or tag
+  gitCommitish?: string;
+  // path to local library
+  localPath?: string;
+
+  constructor(libSpec: string) {
+    let match: RegExpExecArray | null;
+    if ((match = NPM_PACKAGE_REGEX.exec(libSpec))) {
+      this.type = "npm";
+      this.library = match[1] as "bson" | "bson-ext";
+      this.npmVersion = match[2];
+      this.computedModuleName = `${this.library}-${this.npmVersion}`;
+    } else if ((match = GIT_PACKAGE_REGEX.exec(libSpec))) {
+      this.type = "git";
+      this.library = match[1] as "bson" | "bson-ext";
+      this.gitCommitish = match[2];
+      this.computedModuleName = `${this.library}-git-${this.gitCommitish}`;
+    } else if ((match = LOCAL_PACKAGE_REGEX.exec(libSpec))) {
+      this.type = "local";
+      this.library = match[1] as "bson" | "bson-ext";
+
+      this.localPath = match[2];
+      this.computedModuleName = `${
+        this.library
+      }-local-${this.localPath.replaceAll(path.sep, "_")}`;
+    } else {
+      throw new Error("unknown package specifier");
+    }
+  }
+
+  /**
+   * returns the package if it exists, otherwise return undefined
+   */
+  check(): BSONLib | undefined {
+    try {
+      return require(this.computedModuleName);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  /**
+   * Installs the packag e using the  n pm  cli
+   * This function is idempotent
+   *
+   * Note that this function cannot be run in the same Node process that imports the installed
+   * module
+   **/
+  async install(): Promise<void> {
+    let source: string;
+    switch (this.type) {
+      case "npm":
+        source = `npm:${this.library}@${this.npmVersion}`;
+        break;
+      case "git":
+        switch (this.library) {
+          case "bson":
+            source = `git://github.com/mongodb/js-bson#${this.gitCommitish}`;
+            break;
+          case "bson-ext":
+            source = `git://github.com/mongodb-js/bson-ext#${this.gitCommitish}`;
+            break;
+        }
+        break;
+      case "local":
+        source = `${this.localPath}`;
+        // Check if path exists as npm install will not throw an error if this is not the case
+        if ((await fs.access(source)) as unknown)
+          throw new Error(`'${source}' not found`);
+        break;
+    }
+
+    // TODO: Capture stdout and stderr
+    const npmInstallProcess = cp.exec(
+      `npx npm install ${this.computedModuleName}@${source} --no-save`,
+      { encoding: "utf8" },
+    );
+
+    const exitCode: number = (await once(npmInstallProcess, "exit"))[0];
+    if (exitCode !== 0) {
+      throw new Error(
+        `unable to install module: ${this.computedModuleName}@${source}`,
+      );
+    }
+  }
+}
+
+export interface Document {
+  [key: string]: any;
+}
+
+export interface BSONLib {
+  deserialize: (b: Uint8Array, options?: any) => Document;
+  serialize: (o: Document, options?: any) => Uint8Array;
+}
+
+export type BenchmarkSpecification = {
+  documentPath: string;
+  operation: "serialize" | "deserialize";
+  options: Record<string, any>;
+  iterations: number;
+  warmup: number;
+  library: string;
+};
+
+export interface IPCMessage {
+  pe: "returnResult" | "returnError" | "runBenchmark";
+  benchmark?: BenchmarkSpecification;
+  result?: BenchmarkResult;
+  error?: Error;
+}
+
+export interface RunBenchmarkMessage extends IPCMessage {
+  type: "runBenchmark";
+  benchmark: BenchmarkSpecification;
+}
+
+export interface ResultMessage extends IPCMessage {
+  type: "returnResult";
+  result: BenchmarkResult;
+}
+
+export interface ErrorMessage extends IPCMessage {
+  type: "returnError";
+  error: Error;
+}
+
+export class BenchmarkResult {
+  durationMillis: number[];
+  documentSizeBytes: number;
+
+  constructor(durationMillis: number[], documentSize: number) {
+    this.durationMillis = durationMillis;
+    this.documentSizeBytes = documentSize;
+  }
+}
+
+export type PerfSendMetricType =
+  | "SUM"
+  | "COUNT"
+  | "MEDIAN"
+  | "MEAN"
+  | "MIN"
+  | "MAX"
+  | "STANDARD_DEVIATION"
+  | "THROUGHPUT"
+  | "LATENCY"
+  | "PERCENTILE_99TH"
+  | "PERCENTILE_95TH"
+  | "PERCENTILE_90TH"
+  | "PERCENTILE_80TH"
+  | "PERCENTILE_50TH";
+
+export type PerfSendResult = {
+  info: {
+    test_name: string;
+    tags?: string[];
+    args: Record<string, number>;
+  };
+  metrics: {
+    name: string;
+    value: number;
+    type?: PerfSendMetricType;
+    version?: number;
+  }[];
+};

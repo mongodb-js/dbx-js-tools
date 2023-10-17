@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/mocharc.json",
+  "extensions": [
+    "ts"
+  ],
+  "timeout": 60000,
+  "require": [
+    "ts-node/register"
+  ],
+  "recursive": true,
+  "failZero": true,
+  "sort": true,
+  "color": true,
+  "node-option": [
+    "experimental-vm-modules"
+  ]
+}
