@@ -1,9 +1,9 @@
 import * as cp from "child_process";
 import { once } from "events";
-import * as fs from "fs/promises";
 import * as path from "path";
 
-// TODO: Should allow latest, betas and alphas
+import { exists } from "./utils";
+
 // handle normal npm package regex
 export const NPM_PACKAGE_REGEX =
   /(bson-ext|bson)@((\d+(\.\d+)?(\.\d+)?)|latest)/;
@@ -90,12 +90,10 @@ export class Package {
       case "local":
         source = `${this.localPath}`;
         // Check if path exists as npm install will not throw an error if this is not the case
-        if ((await fs.access(source)) as unknown)
-          throw new Error(`'${source}' not found`);
+        if (!(await exists(source))) throw new Error(`'${source}' not found`);
         break;
     }
 
-    // TODO: Capture stdout and stderr
     const pathToNpm = path.join(
       __dirname,
       "..",

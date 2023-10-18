@@ -61,6 +61,24 @@ describe("Task", function () {
       );
     }
 
+    context("when benchmark file does not exist", function () {
+      it("throws an error", async function () {
+        const task = new Task({
+          documentPath: "nonexistent/test/document.json",
+          library: "bson@6.0.0",
+          operation: "serialize",
+          warmup: 1,
+          iterations: 1,
+          options: {},
+        });
+
+        expect(await task.run().catch((e) => e)).to.be.instanceOf(
+          Error,
+          "Failed to read test document",
+        );
+      });
+    });
+
     context("when benchmark throws error", function () {
       it("throws error", async function () {
         const task = new Task({

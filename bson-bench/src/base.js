@@ -45,14 +45,19 @@ function run(bson, config) {
   let fn;
   /** @type number */
   let size;
+  let doc;
 
-  let doc = BSON.EJSON.parse(fs.readFileSync(config.documentPath, "utf8"));
+  try {
+    doc = BSON.EJSON.parse(fs.readFileSync(config.documentPath, "utf8"));
+  } catch (e) {
+    reportErrorAndQuit(new Error("Failed to read test document", { cause: e }));
+  }
 
   switch (config.operation) {
     case "serialize":
       fn = bson.serialize;
       try {
-        size = BSON.calculateObjectSize(doc);
+        size = fn(doc).byteLength;
       } catch (e) {
         const error = new Error("failed to calculate input object size");
         error.cause = e;
@@ -63,6 +68,7 @@ function run(bson, config) {
       fn = bson.deserialize;
       try {
         doc = BSON.serialize(doc);
+        size = doc.byteLength;
       } catch (e) {
         const error = new Error("failed to serialize input object");
         error.cause = e;
@@ -88,10 +94,11 @@ function run(bson, config) {
   }
 
   const resultsMS = [];
+  let start, end;
   for (let i = 0; i < config.iterations; i++) {
-    let start = performance.now();
+    start = performance.now();
     fn(doc, config.options);
-    let end = performance.now();
+    end = performance.now();
     resultsMS.push(end - start);
   }
 

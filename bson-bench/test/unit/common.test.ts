@@ -57,7 +57,10 @@ describe("common functionality", function () {
 
       context("when given a local package", function () {
         it("sets computedModuleName correctly", function () {
-          if (!BSON_PATH) this.skip();
+          if (!BSON_PATH) {
+            console.log("Skipping since BSON_PATH is undefined");
+            this.skip();
+          }
           const pack = new Package(BSON_PATH);
           expect(pack).to.haveOwnProperty(
             "computedModuleName",
@@ -88,7 +91,12 @@ describe("common functionality", function () {
       context(
         "when given a correctly formatted npm package that exists",
         function () {
-          for (const lib of ["bson@6.0.0", "bson-ext@4.0.0"]) {
+          for (const lib of [
+            "bson@6.0.0",
+            "bson-ext@4.0.0",
+            "bson@latest",
+            "bson-ext@latest",
+          ]) {
             it(`installs ${lib} successfully`, async function () {
               const pack = new Package(lib);
               await pack.install();
