@@ -70,8 +70,8 @@ describe("Suite", function () {
             operation: "deserialize",
           });
 
-        expect(await suite.run()).to.not.be.instanceOf(Error);
-        expect(await suite.run()).to.be.instanceOf(Error);
+        expect(await suite.run().catch((e) => e)).to.not.be.instanceOf(Error);
+        expect(await suite.run().catch((e) => e)).to.be.instanceOf(Error);
       });
     });
   });

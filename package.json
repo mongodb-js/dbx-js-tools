@@ -1,0 +1,6 @@
+{
+  "name": "dbx-js-tools",
+  "workspaces": [
+    "packages/bson-bench"
+  ]
+}

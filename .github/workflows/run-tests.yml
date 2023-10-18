@@ -1,14 +1,14 @@
 # This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
 
-name: bson-bench CI
+name: run package tests
 
 on:
   push:
-    paths: bson-bench/**
+    paths: packages/bson-bench/**
     branches: [ "main" ]
   pull_request:
-    paths: bson-bench/**
+    paths: packages/bson-bench/**
     branches: [ "main" ]
 
 jobs:
@@ -30,8 +30,6 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: npm clean install
-      working-directory: ./bson-bench
-      run: npm clean-install
+      run: npm clean-install --workspaces
     - name: Run tests
-      working-directory: ./bson-bench
-      run: npm run test
+      run: npm run test --workspaces --if-present
