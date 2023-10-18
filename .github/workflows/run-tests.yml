@@ -5,10 +5,10 @@ name: run package tests
 
 on:
   push:
-    paths: packages/bson-bench/**
+    paths: packages/**
     branches: [ "main" ]
   pull_request:
-    paths: packages/bson-bench/**
+    paths: packages/**
     branches: [ "main" ]
 
 jobs:
