@@ -49,8 +49,8 @@ function run(bson, config) {
 
   try {
     doc = BSON.EJSON.parse(fs.readFileSync(config.documentPath, "utf8"));
-  } catch (e) {
-    reportErrorAndQuit(new Error("Failed to read test document", { cause: e }));
+  } catch (cause) {
+    reportErrorAndQuit(new Error("Failed to read test document", { cause }));
   }
 
   switch (config.operation) {
@@ -58,10 +58,10 @@ function run(bson, config) {
       fn = bson.serialize;
       try {
         size = fn(doc).byteLength;
-      } catch (e) {
-        const error = new Error("failed to calculate input object size");
-        error.cause = e;
-        reportErrorAndQuit(error);
+      } catch (cause) {
+        reportErrorAndQuit(
+          new Error("failed to calculate input object size", { cause }),
+        );
       }
       break;
     case "deserialize":
@@ -69,10 +69,10 @@ function run(bson, config) {
       try {
         doc = BSON.serialize(doc);
         size = doc.byteLength;
-      } catch (e) {
-        const error = new Error("failed to serialize input object");
-        error.cause = e;
-        reportErrorAndQuit(error);
+      } catch (cause) {
+        reportErrorAndQuit(
+          new Error("failed to serialize input object", { cause }),
+        );
       }
       break;
     default:
@@ -82,10 +82,8 @@ function run(bson, config) {
   // Check if we can successfully run function under test and report failure if not
   try {
     fn(doc, config.options);
-  } catch (e) {
-    const error = new Error("operation under test failed");
-    error.cause = e;
-    reportErrorAndQuit(error);
+  } catch (cause) {
+    reportErrorAndQuit(new Error("operation under test failed", { cause }));
   }
 
   // Run warmup iterations
