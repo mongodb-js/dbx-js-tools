@@ -2,6 +2,7 @@
   "name": "bson-bench",
   "version": "1.0.0",
   "description": "",
+  "main": "./lib/index.js",
   "scripts": {
     "build": "npx tsc",
     "test": "npm run build && npx mocha test/unit/*.test.ts",
