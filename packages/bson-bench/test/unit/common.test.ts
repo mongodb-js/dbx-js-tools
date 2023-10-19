@@ -9,7 +9,7 @@ describe("common functionality", function () {
 
   context("Package", function () {
     beforeEach(clearTestedDeps);
-    afterEach(clearTestedDeps);
+    after(clearTestedDeps);
 
     context("constructor()", function () {
       context("when given a correctly formatted npm package", function () {

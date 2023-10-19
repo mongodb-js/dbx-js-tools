@@ -7,7 +7,7 @@ import { clearTestedDeps } from "../utils";
 
 describe("Suite", function () {
   beforeEach(clearTestedDeps);
-  afterEach(clearTestedDeps);
+  after(clearTestedDeps);
 
   describe("#constructor()", function () {});
   describe("#task()", function () {
@@ -32,7 +32,7 @@ describe("Suite", function () {
         documentPath: "test/documents/long_largeArray.json",
         warmup: 10,
         iterations: 10,
-        library: "bson@6.0.0",
+        library: "bson@5.0.0",
         options: {},
       };
       suite
@@ -57,7 +57,7 @@ describe("Suite", function () {
           documentPath: "test/documents/long_largeArray.json",
           warmup: 10,
           iterations: 10,
-          library: "bson@6.0.0",
+          library: "bson@5.0.0",
           options: {},
         };
         suite
@@ -83,7 +83,7 @@ describe("Suite", function () {
         documentPath: "test/documents/long_largeArray.json",
         warmup: 10,
         iterations: 10,
-        library: "bson@6.0.0",
+        library: "bson@5.0.0",
         options: {},
       };
       suite
@@ -97,7 +97,7 @@ describe("Suite", function () {
         });
 
       await suite.run();
-      expect(suite.errors).to.have.lengthOf(0);
+      expect(suite.errors).to.have.lengthOf(0, "Failed to run benchmarks");
       await suite.writeResults();
 
       expect(await exists("results.json")).to.be.true;

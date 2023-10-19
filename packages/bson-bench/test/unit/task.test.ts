@@ -9,7 +9,7 @@ import {
 import { clearTestedDeps } from "../utils";
 
 describe("Task", function () {
-  before(clearTestedDeps);
+  beforeEach(clearTestedDeps);
   after(clearTestedDeps);
 
   const BSON_PATH = process.env.BSON_PATH;
