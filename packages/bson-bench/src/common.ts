@@ -65,10 +65,9 @@ export class Package {
   }
 
   /**
-   * Installs the packag e using the  n pm  cli
-   * This function is idempotent
+   * Installs the package using the npm cli
    *
-   * Note that this function cannot be run in the same Node process that imports the installed
+   * Note that this function should not be run in the same Node process that imports the installed
    * module
    **/
   async install(): Promise<void> {
