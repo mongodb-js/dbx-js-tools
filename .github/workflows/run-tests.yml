@@ -5,10 +5,8 @@ name: run package tests
 
 on:
   push:
-    paths: packages/**
     branches: [ "main" ]
-  pull_request:
-    paths: packages/**
+  pull_request: null
 
 jobs:
   build:
