@@ -44,7 +44,7 @@ function run(bson, config) {
   /** @type {((b: Uint8Array, options: any) => any) | ((o: any, options: any) => Uint8Array)} */
   let fn;
   /** @type number */
-  let size;
+  let documentSizeBytes;
   let doc;
 
   try {
@@ -57,7 +57,7 @@ function run(bson, config) {
     case "serialize":
       fn = bson.serialize;
       try {
-        size = fn(doc).byteLength;
+        documentSizeBytes = fn(doc).byteLength;
       } catch (cause) {
         reportErrorAndQuit(
           new Error("failed to calculate input object size", { cause }),
@@ -68,7 +68,7 @@ function run(bson, config) {
       fn = bson.deserialize;
       try {
         doc = BSON.serialize(doc);
-        size = doc.byteLength;
+        documentSizeBytes = doc.byteLength;
       } catch (cause) {
         reportErrorAndQuit(
           new Error("failed to serialize input object", { cause }),
@@ -91,16 +91,16 @@ function run(bson, config) {
     fn(doc, config.options);
   }
 
-  const resultsMS = [];
+  const durationMillis = [];
   let start, end;
   for (let i = 0; i < config.iterations; i++) {
     start = performance.now();
     fn(doc, config.options);
     end = performance.now();
-    resultsMS.push(end - start);
+    durationMillis.push(end - start);
   }
 
-  reportResultAndQuit(new BenchmarkResult(resultsMS, size));
+  reportResultAndQuit({ durationMillis, documentSizeBytes });
 }
 
 /**

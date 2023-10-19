@@ -12,6 +12,9 @@ import {
   type ResultMessage,
 } from "./common";
 
+/**
+ * An individual benchmark task that runs in its own Node.js process
+ */
 export class Task {
   result: BenchmarkResult | undefined;
   benchmark: BenchmarkSpecification;
@@ -32,6 +35,12 @@ export class Task {
     }_${this.benchmark.library}`;
   }
 
+  /**
+   * If the Task has been run, calculates summary statistics and returns results in format expected
+   * by [perf.send](https://docs.devprod.prod.corp.mongodb.com/evergreen/Project-Configuration/Project-Commands#perfsend).
+   *
+   * Throws error is Task has not been run or failed to generate results previously
+   */
   getResults(): PerfSendResult {
     if (!this.hasRun)
       throw new Error("cannot write results if benchmark has not been run");
@@ -49,7 +58,12 @@ export class Task {
     const meanThroughputMBps =
       throughputMBps.reduce((prev, thrpt) => thrpt + prev, 0) /
       throughputMBps.length;
-    const medianThroughputMBps = throughputMBps[throughputMBps.length / 2];
+    const medianThroughputMBps: number =
+      throughputMBps.length % 2 === 0
+        ? (throughputMBps[throughputMBps.length / 2] +
+            throughputMBps[throughputMBps.length / 2 - 1]) /
+          2
+        : throughputMBps[throughputMBps.length / 2];
     const maxThroughputMBps = throughputMBps[throughputMBps.length - 1];
     const minThroughputMBps = throughputMBps[0];
 
@@ -131,6 +145,9 @@ export class Task {
     return perfSendResults;
   }
 
+  /**
+   * Writes out result to file with name determined by test configuration
+   */
   async writeResults(): Promise<void> {
     const perfSendResults = this.getResults();
 
@@ -144,6 +161,10 @@ export class Task {
     child.send({ type: "runBenchmark", benchmark: this.benchmark });
   }
 
+  /**
+   * Runs benchmark in separate Node.js process and returns results once it successfully completes.
+   * Throws an error if the benchmark failed to complete
+   */
   async run(): Promise<BenchmarkResult> {
     if (this.hasRun && this.result) return this.result;
 

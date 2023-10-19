@@ -4,6 +4,8 @@ export {
   BSONLib,
   ErrorMessage,
   IPCMessage,
+  PerfSendMetricType,
+  PerfSendResult,
   ResultMessage,
 } from "./common";
 export { Suite } from "./suite";

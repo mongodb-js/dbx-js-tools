@@ -56,7 +56,7 @@ export class Package {
   /**
    * returns the package if it exists, otherwise return undefined
    */
-  check(): BSONLib | undefined {
+  check<B extends BSONLib>(): B | undefined {
     try {
       return require(this.computedModuleName);
     } catch (e) {
@@ -126,11 +126,18 @@ export interface BSONLib {
 }
 
 export type BenchmarkSpecification = {
+  /** Path to test document */
   documentPath: string;
+  /** BSON operation to be benchmarked */
   operation: "serialize" | "deserialize";
+  /** Options to be passed in to the operation being performed */
   options: Record<string, any>;
+  /** Number of iterations that will be timed and used to calculate summary statistics*/
   iterations: number;
+  /** Number of iterations that will be run to warm up the V8 engine */
   warmup: number;
+  /** Specifier of the bson or bson-ext library to be used. Can be an npm package, git repository or
+   * local package */
   library: string;
 };
 
@@ -156,15 +163,10 @@ export interface ErrorMessage extends IPCMessage {
   error: Error;
 }
 
-export class BenchmarkResult {
+export type BenchmarkResult = {
   durationMillis: number[];
   documentSizeBytes: number;
-
-  constructor(durationMillis: number[], documentSize: number) {
-    this.durationMillis = durationMillis;
-    this.documentSizeBytes = documentSize;
-  }
-}
+};
 
 export type PerfSendMetricType =
   | "SUM"
