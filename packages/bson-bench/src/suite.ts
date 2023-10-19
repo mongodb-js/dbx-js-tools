@@ -7,6 +7,9 @@ import {
 } from "./common";
 import { Task } from "./task";
 
+/**
+ * A collection of related Tasks
+ */
 export class Suite {
   tasks: Task[];
   name: string;
@@ -22,11 +25,18 @@ export class Suite {
     this._results = [];
   }
 
+  /**
+   * Add a task to the suite
+   */
   task(benchmarkSpec: BenchmarkSpecification): Suite {
     this.tasks.push(new Task(benchmarkSpec));
     return this;
   }
 
+  /**
+   * Run all Tasks. Throws error if suite has already been run
+   * Collects all results and thrown errors from child Tasks
+   */
   async run(): Promise<void> {
     if (this.hasRun) throw new Error("Suite has already been run");
 
@@ -52,14 +62,23 @@ export class Suite {
     this.hasRun = true;
   }
 
+  /**
+   * Return all collected results
+   **/
   get results(): PerfSendResult[] {
     return this._results;
   }
 
+  /**
+   * Return array of task, error pairs
+   **/
   get errors(): { task: Task; error: Error }[] {
     return this._errors;
   }
 
+  /**
+   * Write results to `results.json` if fileName not specified
+   */
   async writeResults(fileName?: string): Promise<void> {
     const outputFileName = fileName ?? "results.json";
 
