@@ -139,66 +139,6 @@
   },
   "overrides": [
     {
-      "files": [
-        "*.d.ts"
-      ],
-      "parser": "@typescript-eslint/parser",
-      "rules": {
-        "prettier/prettier": "off",
-        "@typescript-eslint/no-empty-interface": "off",
-        "@typescript-eslint/no-misused-new": "off",
-        "@typescript-eslint/ban-types": "off",
-        "@typescript-eslint/no-unused-vars": "off"
-      }
-    },
-    {
-      "files": [
-        "*.mjs"
-      ],
-      "parserOptions": {
-        "sourceType": "module"
-      }
-    },
-    {
-      // Settings for javascript test files
-      "files": [
-        "test/**/*.js"
-      ],
-      "parser": "espree",
-      "plugins": [
-        "prettier"
-      ],
-      "extends": [
-        "eslint:recommended",
-        "plugin:prettier/recommended"
-      ],
-      "rules": {
-        "@typescript-eslint/no-var-requires": "off",
-        "@typescript-eslint/no-empty-function": "off",
-        "@typescript-eslint/no-this-alias": "off",
-        "@typescript-eslint/no-unused-vars": "off",
-        // Since we use ts-node we should always require the TS code
-        // Also we have patches to apply to the mock server, so we should always import from there
-        "no-restricted-modules": [
-          "error",
-          {
-            "patterns": [
-              "**/../lib/**",
-              "**/../src/**",
-              "mongodb-mock-server"
-            ]
-          }
-        ],
-        "no-console": "off",
-        "tsdoc/syntax": "off",
-        "strict": [
-          "off",
-          "global"
-        ],
-        "no-restricted-syntax": "off"
-      }
-    },
-    {
       // Settings for typescript test files
       "files": [
         "test/**/*.ts"
@@ -209,21 +149,6 @@
         "no-restricted-syntax": "off",
         "typescript-eslint/ban-ts-comment": "off",
         "no-restricted-imports": "off"
-      }
-    },
-    {
-      // Settings for javascript source files
-      "files": [
-        "src/**/*.js"
-      ],
-      "parser": "@typescript-eslint/parser",
-      "parserOptions": {
-        "project": [
-          "./tsconfig.json"
-        ]
-      },
-      "rules": {
-        "tsdoc/syntax": "off"
       }
     },
     {
@@ -247,42 +172,7 @@
         "@typescript-eslint/return-await": [
           "error",
           "in-try-catch"
-        ],
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              "**/../lib/**",
-              "mongodb-mock-server"
-            ]
-          }
         ]
-      }
-    },
-    {
-      // Settings for typescript type test files
-      "files": [
-        "*.test-d.ts"
-      ],
-      "parser": "@typescript-eslint/parser",
-      "rules": {
-        "prettier/prettier": "error",
-        "tsdoc/syntax": "warn",
-        "no-console": "off",
-        "@typescript-eslint/no-explicit-any": "off",
-        "@typescript-eslint/no-unused-vars": "error",
-        "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-empty-function": "off"
-      }
-    },
-    {
-      // Settings for generated definition files
-      "files": [
-        "mongodb.d.ts"
-      ],
-      "parser": "@typescript-eslint/parser",
-      "rules": {
-        "unused-imports/no-unused-imports": "error"
       }
     }
   ]
