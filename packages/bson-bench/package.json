@@ -5,23 +5,25 @@
   "private": true,
   "main": "./lib/index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "npx tsc -p ./tsconfig.json",
     "test": "npm run build && npx mocha test/unit/*.test.ts"
   },
   "engines": {
     "node": ">=16.20.1"
   },
   "keywords": [],
-  "author": {
-    "name": "The MongoDB NodeJS Team",
-    "email": "dbx-node@mongodb.com"
-  },
+  "author": "The MongoDB NodeJS Team <dbx-node@mongodb.com>",
   "license": "Apache-2.0",
   "dependencies": {
     "bson": "^6.1.0",
     "npm": "^9.9.0"
   },
   "devDependencies": {
+    "@types/node": "^20.8.9",
     "typescript": "^5.2.2"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
   }
 }
