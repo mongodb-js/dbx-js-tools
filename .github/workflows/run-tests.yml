@@ -6,7 +6,8 @@ name: run package tests
 on:
   push:
     branches: [ "main" ]
-  pull_request: null
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
