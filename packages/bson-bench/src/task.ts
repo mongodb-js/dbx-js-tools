@@ -1,7 +1,7 @@
-import { type ChildProcess, fork } from "child_process";
-import { once } from "events";
-import { writeFile } from "fs/promises";
-import * as path from "path";
+import { type ChildProcess, fork } from 'child_process';
+import { once } from 'events';
+import { writeFile } from 'fs/promises';
+import * as path from 'path';
 
 import {
   type BenchmarkResult,
@@ -9,8 +9,8 @@ import {
   type ErrorMessage,
   Package,
   type PerfSendResult,
-  type ResultMessage,
-} from "./common";
+  type ResultMessage
+} from './common';
 
 /**
  * An individual benchmark task that runs in its own Node.js process
@@ -30,7 +30,7 @@ export class Task {
     this.children = [];
     this.hasRun = false;
 
-    this.taskName = `${path.basename(this.benchmark.documentPath, "json")}_${
+    this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${
       this.benchmark.operation
     }_${this.benchmark.library}`;
   }
@@ -42,22 +42,18 @@ export class Task {
    * Throws error is Task has not been run or failed to generate results previously
    */
   getResults(): PerfSendResult {
-    if (!this.hasRun)
-      throw new Error("cannot write results if benchmark has not been run");
-    if (!this.result) throw new Error("benchmark failed; no results to write");
+    if (!this.hasRun) throw new Error('cannot write results if benchmark has not been run');
+    if (!this.result) throw new Error('benchmark failed; no results to write');
 
     const { durationMillis, documentSizeBytes } = this.result;
     const calculateThroughputMBps = (durationMillis: number, bytes: number) =>
       bytes / durationMillis / 1000;
-    const throughputMBps = durationMillis.map((d) =>
-      calculateThroughputMBps(d, documentSizeBytes),
-    );
+    const throughputMBps = durationMillis.map(d => calculateThroughputMBps(d, documentSizeBytes));
     throughputMBps.sort();
 
     // Calculate summary statistics
     const meanThroughputMBps =
-      throughputMBps.reduce((prev, thrpt) => thrpt + prev, 0) /
-      throughputMBps.length;
+      throughputMBps.reduce((prev, thrpt) => thrpt + prev, 0) / throughputMBps.length;
     const medianThroughputMBps: number =
       throughputMBps.length % 2 === 0
         ? (throughputMBps[throughputMBps.length / 2] +
@@ -72,36 +68,34 @@ export class Task {
       for (const key in o) {
         // boolean options
         switch (key) {
-          case "promoteValues":
-          case "promoteBuffers":
-          case "promoteLongs":
-          case "bsonRegExp":
-          case "allowObjectSmallerThanBufferSize":
-          case "useBigInt64":
-          case "evalFunctions":
-          case "cacheFunctions":
-          case "checkKeys":
-          case "ignoreUndefined":
-          case "serializeFunctions":
+          case 'promoteValues':
+          case 'promoteBuffers':
+          case 'promoteLongs':
+          case 'bsonRegExp':
+          case 'allowObjectSmallerThanBufferSize':
+          case 'useBigInt64':
+          case 'evalFunctions':
+          case 'cacheFunctions':
+          case 'checkKeys':
+          case 'ignoreUndefined':
+          case 'serializeFunctions':
             output[key] = Number(o[key]);
             break;
           // numeric options
-          case "index":
+          case 'index':
             output[key] = o[key];
             break;
           // special cases
-          case "validation":
-            output["utf8Validation"] = /^bson-ext/.test(this.benchmark.library)
+          case 'validation':
+            output['utf8Validation'] = /^bson-ext/.test(this.benchmark.library)
               ? 1
-              : typeof o[key] === "boolean"
+              : typeof o[key] === 'boolean'
               ? Number(o[key])
               : 1;
             break;
           default:
             output[key] =
-              typeof o[key] === "boolean" || typeof o[key] === "number"
-                ? Number(o[key])
-                : -1;
+              typeof o[key] === 'boolean' || typeof o[key] === 'number' ? Number(o[key]) : -1;
         }
       }
 
@@ -115,31 +109,31 @@ export class Task {
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,
-          ...optionsWithNumericFields,
-        },
+          ...optionsWithNumericFields
+        }
       },
       metrics: [
         {
-          name: "megabytes_per_second",
-          type: "MEAN",
-          value: meanThroughputMBps,
+          name: 'megabytes_per_second',
+          type: 'MEAN',
+          value: meanThroughputMBps
         },
         {
-          name: "megabytes_per_second",
-          type: "MEDIAN",
-          value: medianThroughputMBps,
+          name: 'megabytes_per_second',
+          type: 'MEDIAN',
+          value: medianThroughputMBps
         },
         {
-          name: "megabytes_per_second",
-          type: "MIN",
-          value: minThroughputMBps,
+          name: 'megabytes_per_second',
+          type: 'MIN',
+          value: minThroughputMBps
         },
         {
-          name: "megabytes_per_second",
-          type: "MAX",
-          value: maxThroughputMBps,
-        },
-      ],
+          name: 'megabytes_per_second',
+          type: 'MAX',
+          value: maxThroughputMBps
+        }
+      ]
     };
 
     return perfSendResults;
@@ -153,12 +147,12 @@ export class Task {
 
     await writeFile(
       `${perfSendResults.info.test_name}.json`,
-      JSON.stringify(perfSendResults, undefined, 2),
+      JSON.stringify(perfSendResults, undefined, 2)
     );
   }
 
   private sendBenchmark(child: ChildProcess): void {
-    child.send({ type: "runBenchmark", benchmark: this.benchmark });
+    child.send({ type: 'runBenchmark', benchmark: this.benchmark });
   }
 
   /**
@@ -174,26 +168,24 @@ export class Task {
     if (!pack.check()) await pack.install();
     // spawn child process
     const child = fork(`${__dirname}/base.js`, {
-      stdio: ["inherit", "inherit", "inherit", "ipc"],
-      serialization: "advanced",
+      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+      serialization: 'advanced'
     });
     this.sendBenchmark(child);
     this.children.push(child);
 
     // listen for results or error
-    const resultOrError: ResultMessage | ErrorMessage = (
-      await once(child, "message")
-    )[0];
+    const resultOrError: ResultMessage | ErrorMessage = (await once(child, 'message'))[0];
 
     // wait for child to close
-    await once(child, "exit");
+    await once(child, 'exit');
 
     this.hasRun = true;
     switch (resultOrError.type) {
-      case "returnResult":
+      case 'returnResult':
         this.result = resultOrError.result;
         return resultOrError.result;
-      case "returnError":
+      case 'returnError':
         throw resultOrError.error;
     }
   }

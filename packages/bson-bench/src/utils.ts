@@ -1,4 +1,8 @@
-import { exists as existsCallback } from "fs";
-import { promisify } from "util";
+import { type PathLike } from 'fs';
+import { access } from 'fs/promises';
 
-export const exists = promisify(existsCallback);
+export const exists = (path: PathLike) =>
+  access(path).then(
+    () => true,
+    () => false
+  );

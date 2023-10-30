@@ -1,18 +1,17 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-const {
-  Package,
-  BSONLib,
-  BenchmarkSpecification,
-  RunBenchmarkMessage,
-  BenchmarkResult,
-} = require(`${__dirname}/common`);
-/* eslint-enable @typescript-eslint/no-unused-vars */
+import * as BSON from "bson";
+import { readFileSync } from "fs";
+import { performance } from "perf_hooks";
+import * as process from "process";
 
-const { performance } = require("perf_hooks");
-const fs = require("fs");
-const process = require("process");
-const BSON = require("bson");
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  BenchmarkResult,
+  BenchmarkSpecification,
+  BSONLib,
+  Package,
+  RunBenchmarkMessage,
+} from "./common";
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 /**
  * @param result {BenchmarkResult}
@@ -20,7 +19,7 @@ const BSON = require("bson");
 function reportResultAndQuit(result) {
   if (process.send) process?.send({ type: "returnResult", result });
   process.disconnect();
-  process.exit(0);
+  process.exitCode = 0;
 }
 
 /**
@@ -33,7 +32,7 @@ function reportErrorAndQuit(error) {
       error,
     });
   process.disconnect();
-  process.exit(1);
+  process.exitCode = 1;
 }
 
 /**
@@ -48,7 +47,7 @@ function run(bson, config) {
   let doc;
 
   try {
-    doc = BSON.EJSON.parse(fs.readFileSync(config.documentPath, "utf8"));
+    doc = BSON.EJSON.parse(readFileSync(config.documentPath, "utf8"));
   } catch (cause) {
     reportErrorAndQuit(new Error("Failed to read test document", { cause }));
   }

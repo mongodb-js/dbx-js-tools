@@ -1,12 +1,11 @@
-import * as cp from "child_process";
-import { once } from "events";
-import * as path from "path";
+import * as cp from 'child_process';
+import { once } from 'events';
+import * as path from 'path';
 
-import { exists } from "./utils";
+import { exists } from './utils';
 
 // handle normal npm package regex
-export const NPM_PACKAGE_REGEX =
-  /(bson-ext|bson)@((\d+(\.\d+)?(\.\d+)?)|latest)/;
+export const NPM_PACKAGE_REGEX = /(bson-ext|bson)@((\d+(\.\d+)?(\.\d+)?)|latest)/;
 // handle git tags/commits
 export const GIT_PACKAGE_REGEX = /(bson-ext|bson)#(.+)/;
 // handle local package
@@ -17,9 +16,9 @@ export const LOCAL_PACKAGE_REGEX = /(bson-ext|bson):(.+)/;
  * This package can be an npm package, a git repository or a local package
  **/
 export class Package {
-  type: "npm" | "git" | "local";
+  type: 'npm' | 'git' | 'local';
   // bson library to install
-  library: "bson" | "bson-ext";
+  library: 'bson' | 'bson-ext';
   computedModuleName: string;
   // semver version specification
   npmVersion?: string;
@@ -31,25 +30,23 @@ export class Package {
   constructor(libSpec: string) {
     let match: RegExpExecArray | null;
     if ((match = NPM_PACKAGE_REGEX.exec(libSpec))) {
-      this.type = "npm";
-      this.library = match[1] as "bson" | "bson-ext";
+      this.type = 'npm';
+      this.library = match[1] as 'bson' | 'bson-ext';
       this.npmVersion = match[2];
       this.computedModuleName = `${this.library}-${this.npmVersion}`;
     } else if ((match = GIT_PACKAGE_REGEX.exec(libSpec))) {
-      this.type = "git";
-      this.library = match[1] as "bson" | "bson-ext";
+      this.type = 'git';
+      this.library = match[1] as 'bson' | 'bson-ext';
       this.gitCommitish = match[2];
       this.computedModuleName = `${this.library}-git-${this.gitCommitish}`;
     } else if ((match = LOCAL_PACKAGE_REGEX.exec(libSpec))) {
-      this.type = "local";
-      this.library = match[1] as "bson" | "bson-ext";
+      this.type = 'local';
+      this.library = match[1] as 'bson' | 'bson-ext';
 
       this.localPath = match[2];
-      this.computedModuleName = `${
-        this.library
-      }-local-${this.localPath.replaceAll(path.sep, "_")}`;
+      this.computedModuleName = `${this.library}-local-${this.localPath.replaceAll(path.sep, '_')}`;
     } else {
-      throw new Error("unknown package specifier");
+      throw new Error('unknown package specifier');
     }
   }
 
@@ -73,44 +70,35 @@ export class Package {
   async install(): Promise<void> {
     let source: string;
     switch (this.type) {
-      case "npm":
+      case 'npm':
         source = `npm:${this.library}@${this.npmVersion}`;
         break;
-      case "git":
+      case 'git':
         switch (this.library) {
-          case "bson":
+          case 'bson':
             source = `git://github.com/mongodb/js-bson#${this.gitCommitish}`;
             break;
-          case "bson-ext":
+          case 'bson-ext':
             source = `git://github.com/mongodb-js/bson-ext#${this.gitCommitish}`;
             break;
         }
         break;
-      case "local":
+      case 'local':
         source = `${this.localPath}`;
         // Check if path exists as npm install will not throw an error if this is not the case
         if (!(await exists(source))) throw new Error(`'${source}' not found`);
         break;
     }
 
-    const pathToNpm = path.join(
-      __dirname,
-      "..",
-      "node_modules",
-      "npm",
-      "bin",
-      "npm-cli.js",
-    );
+    const pathToNpm = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npm-cli.js');
     const npmInstallProcess = cp.exec(
       `node ${pathToNpm} install ${this.computedModuleName}@${source} --no-save`,
-      { encoding: "utf8" },
+      { encoding: 'utf8' }
     );
 
-    const exitCode: number = (await once(npmInstallProcess, "exit"))[0];
+    const exitCode: number = (await once(npmInstallProcess, 'exit'))[0];
     if (exitCode !== 0) {
-      throw new Error(
-        `unable to install module: ${this.computedModuleName}@${source}`,
-      );
+      throw new Error(`unable to install module: ${this.computedModuleName}@${source}`);
     }
   }
 }
@@ -128,7 +116,7 @@ export type BenchmarkSpecification = {
   /** Path to test document */
   documentPath: string;
   /** BSON operation to be benchmarked */
-  operation: "serialize" | "deserialize";
+  operation: 'serialize' | 'deserialize';
   /** Options to be passed in to the operation being performed */
   options: Record<string, any>;
   /** Number of iterations that will be timed and used to calculate summary statistics*/
@@ -141,24 +129,24 @@ export type BenchmarkSpecification = {
 };
 
 export interface IPCMessage {
-  pe: "returnResult" | "returnError" | "runBenchmark";
+  pe: 'returnResult' | 'returnError' | 'runBenchmark';
   benchmark?: BenchmarkSpecification;
   result?: BenchmarkResult;
   error?: Error;
 }
 
 export interface RunBenchmarkMessage extends IPCMessage {
-  type: "runBenchmark";
+  type: 'runBenchmark';
   benchmark: BenchmarkSpecification;
 }
 
 export interface ResultMessage extends IPCMessage {
-  type: "returnResult";
+  type: 'returnResult';
   result: BenchmarkResult;
 }
 
 export interface ErrorMessage extends IPCMessage {
-  type: "returnError";
+  type: 'returnError';
   error: Error;
 }
 
@@ -168,20 +156,20 @@ export type BenchmarkResult = {
 };
 
 export type PerfSendMetricType =
-  | "SUM"
-  | "COUNT"
-  | "MEDIAN"
-  | "MEAN"
-  | "MIN"
-  | "MAX"
-  | "STANDARD_DEVIATION"
-  | "THROUGHPUT"
-  | "LATENCY"
-  | "PERCENTILE_99TH"
-  | "PERCENTILE_95TH"
-  | "PERCENTILE_90TH"
-  | "PERCENTILE_80TH"
-  | "PERCENTILE_50TH";
+  | 'SUM'
+  | 'COUNT'
+  | 'MEDIAN'
+  | 'MEAN'
+  | 'MIN'
+  | 'MAX'
+  | 'STANDARD_DEVIATION'
+  | 'THROUGHPUT'
+  | 'LATENCY'
+  | 'PERCENTILE_99TH'
+  | 'PERCENTILE_95TH'
+  | 'PERCENTILE_90TH'
+  | 'PERCENTILE_80TH'
+  | 'PERCENTILE_50TH';
 
 export type PerfSendResult = {
   info: {

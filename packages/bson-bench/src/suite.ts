@@ -1,11 +1,7 @@
-import { writeFile } from "fs/promises";
+import { writeFile } from 'fs/promises';
 
-import {
-  type BenchmarkResult,
-  type BenchmarkSpecification,
-  type PerfSendResult,
-} from "./common";
-import { Task } from "./task";
+import { type BenchmarkResult, type BenchmarkSpecification, type PerfSendResult } from './common';
+import { Task } from './task';
 
 /**
  * A collection of related Tasks
@@ -38,13 +34,13 @@ export class Suite {
    * Collects all results and thrown errors from child Tasks
    */
   async run(): Promise<void> {
-    if (this.hasRun) throw new Error("Suite has already been run");
+    if (this.hasRun) throw new Error('Suite has already been run');
 
     console.log(`Suite: ${this.name}`);
     for (const task of this.tasks) {
       const result = await task.run().then(
         (_r: BenchmarkResult) => task.getResults(),
-        (e: Error) => e,
+        (e: Error) => e
       );
       if (result instanceof Error) {
         console.log(`\t${task.taskName} ✗`);
@@ -80,7 +76,7 @@ export class Suite {
    * Write results to `results.json` if fileName not specified
    */
   async writeResults(fileName?: string): Promise<void> {
-    const outputFileName = fileName ?? "results.json";
+    const outputFileName = fileName ?? 'results.json';
 
     await writeFile(outputFileName, JSON.stringify(this.results, undefined, 2));
   }
