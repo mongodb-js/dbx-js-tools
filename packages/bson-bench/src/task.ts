@@ -151,10 +151,6 @@ export class Task {
     );
   }
 
-  private sendBenchmark(child: ChildProcess): void {
-    child.send({ type: 'runBenchmark', benchmark: this.benchmark });
-  }
-
   /**
    * Runs benchmark in separate Node.js process and returns results once it successfully completes.
    * Throws an error if the benchmark failed to complete
@@ -167,11 +163,11 @@ export class Task {
     const pack = new Package(this.benchmark.library);
     if (!pack.check()) await pack.install();
     // spawn child process
-    const child = fork(`${__dirname}/base.js`, {
+    const child = fork(`${__dirname}/base`, {
       stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
       serialization: 'advanced'
     });
-    this.sendBenchmark(child);
+    child.send({ type: 'runBenchmark', benchmark: this.benchmark });
     this.children.push(child);
 
     // listen for results or error
@@ -187,6 +183,8 @@ export class Task {
         return resultOrError.result;
       case 'returnError':
         throw resultOrError.error;
+      default:
+        throw new Error('Unexpected result returned from child process');
     }
   }
 }
