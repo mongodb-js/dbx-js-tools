@@ -50,7 +50,7 @@ describe('common functionality', function () {
             console.log('Skipping since BSON_PATH is undefined');
             this.skip();
           }
-          const pack = new Package(BSON_PATH);
+          const pack = new Package(`bson:${BSON_PATH}`);
           expect(pack).to.haveOwnProperty(
             'computedModuleName',
             `bson-local-${BSON_PATH.replaceAll(sep, '_')}`
@@ -144,7 +144,7 @@ describe('common functionality', function () {
 
           const bsonLocal = new Package(`bson:${BSON_PATH}`);
           const maybeError = await bsonLocal.install().catch(error => error);
-          expect(maybeError).to.be.undefined;
+          expect(maybeError).to.not.be.instanceOf(Error, maybeError.message);
         });
       });
 

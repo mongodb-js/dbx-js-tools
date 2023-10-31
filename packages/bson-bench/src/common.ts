@@ -93,7 +93,7 @@ export class Package {
     const pathToNpm = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npm-cli.js');
     const npmInstallProcess = cp.exec(
       `node ${pathToNpm} install ${this.computedModuleName}@${source} --no-save`,
-      { encoding: 'utf8' }
+      { encoding: 'utf8', cwd: __dirname }
     );
 
     const exitCode: number = (await once(npmInstallProcess, 'exit'))[0];
