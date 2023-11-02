@@ -47,9 +47,9 @@ export class Task {
 
     const { durationMillis, documentSizeBytes } = this.result;
     const calculateThroughputMBps = (durationMillis: number, bytes: number) =>
-      bytes / durationMillis / 1000;
+      bytes / durationMillis / 1000.0;
     const throughputMBps = durationMillis.map(d => calculateThroughputMBps(d, documentSizeBytes));
-    throughputMBps.sort();
+    throughputMBps.sort((a, b) => a - b);
 
     // Calculate summary statistics
     const meanThroughputMBps =
