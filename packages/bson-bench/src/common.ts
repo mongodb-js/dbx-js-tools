@@ -90,9 +90,8 @@ export class Package {
         break;
     }
 
-    const pathToNpm = path.join(__dirname, '..', 'node_modules', 'npm', 'bin', 'npm-cli.js');
     const npmInstallProcess = cp.exec(
-      `node ${pathToNpm} install ${this.computedModuleName}@${source} --no-save`,
+      `npm install ${this.computedModuleName}@${source} --no-save`,
       { encoding: 'utf8', cwd: __dirname }
     );
 

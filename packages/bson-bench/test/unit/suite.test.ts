@@ -9,7 +9,6 @@ describe('Suite', function () {
   beforeEach(clearTestedDeps);
   after(clearTestedDeps);
 
-  describe('#constructor()', function () {});
   describe('#task()', function () {
     it('returns the Suite it was called on', function () {
       const suite = new Suite('test');
@@ -25,6 +24,7 @@ describe('Suite', function () {
       ).to.equal(suite);
     });
   });
+
   describe('#run()', function () {
     it('calls Task.run on all child Tasks', async function () {
       const suite = new Suite('test');

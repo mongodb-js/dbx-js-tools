@@ -9,14 +9,14 @@
     "test": "npm run build && npx mocha test/unit/*.test.ts"
   },
   "engines": {
-    "node": ">=16.20.1"
+    "node": ">=16.20.1",
+    "npm": ">=9.0.0"
   },
   "keywords": [],
   "author": "The MongoDB NodeJS Team <dbx-node@mongodb.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "bson": "^6.1.0",
-    "npm": "^9.9.0"
+    "bson": "^6.1.0"
   },
   "directories": {
     "lib": "lib",

@@ -92,6 +92,7 @@ describe('Task', function () {
   context('#getResults()', function () {
     let task: Task;
     let results: PerfSendResult;
+
     before(async function () {
       const options = {
         promoteValues: true,
@@ -107,6 +108,7 @@ describe('Task', function () {
         serializeFunctions: false,
         index: 0
       };
+
       task = new Task({
         documentPath: 'test/documents/long_largeArray.json',
         library: 'bson-ext@4.0.0',
