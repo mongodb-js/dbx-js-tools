@@ -62,6 +62,10 @@ export class Task {
         : throughputMBps[throughputMBps.length / 2];
     const maxThroughputMBps = throughputMBps[throughputMBps.length - 1];
     const minThroughputMBps = throughputMBps[0];
+    const throughputMBpsVariance =
+      throughputMBps.map(x => (x - meanThroughputMBps) ** 2).reduce((x, y) => x + y) /
+      throughputMBps.length;
+    const throughputMBpsStddev = Math.sqrt(throughputMBpsVariance);
 
     const convertOptions = (o: any): any => {
       const output = Object.create(null);
@@ -132,6 +136,11 @@ export class Task {
           name: 'megabytes_per_second',
           type: 'MAX',
           value: maxThroughputMBps
+        },
+        {
+          name: 'megabytes_per_second',
+          type: 'STANDARD_DEVIATION',
+          value: throughputMBpsStddev
         }
       ]
     };
