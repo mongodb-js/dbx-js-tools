@@ -28,7 +28,9 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - name: npm clean install
+    - name: npm clean install 
+      run: npm clean-install 
+    - name: npm clean install workspaces
       run: npm clean-install --workspaces
     - name: check lint
       run: npm run check:eslint --workspaces --if-present
