@@ -13,9 +13,9 @@ describe('Task', function () {
   const BSON_PATH = process.env.BSON_PATH;
   const BSON_EXT_PATH = process.env.BSON_EXT_PATH;
   const versions = [
+    'bson@6.0.0',
     'bson@4.0.0',
     'bson@5.0.0',
-    'bson@6.0.0',
     'bson#v6.1.0',
     'bson-ext@4.0.0',
     'bson-ext#c1284d1'
