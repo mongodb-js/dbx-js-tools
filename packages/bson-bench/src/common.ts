@@ -109,6 +109,7 @@ export interface Document {
 export interface BSONLib {
   deserialize: (b: Uint8Array, options?: any) => Document;
   serialize: (o: Document, options?: any) => Uint8Array;
+  EJSON?: any
 }
 
 export type BenchmarkSpecification = {

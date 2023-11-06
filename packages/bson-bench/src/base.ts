@@ -37,7 +37,8 @@ function run(bson: BSONLib, config: BenchmarkSpecification) {
   let doc: any;
 
   try {
-    doc = BSON.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
+    if (bson.EJSON === undefined) doc = BSON.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
+    else doc = bson.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
   } catch (cause) {
     reportErrorAndQuit(new Error('Failed to read test document', { cause }));
     return;
