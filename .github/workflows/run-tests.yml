@@ -28,9 +28,9 @@ jobs:
         cache: 'npm'
     - name: install npm 9
       run: npm install -g npm@9
-    - name: npm clean install 
-      run: npm clean-install
-    - name: npm clean install workspaces
-      run: npm clean-install --workspaces
+    - name: npm install 
+      run: npm install
+    - name: npm install workspaces
+      run: npm install --workspaces
     - name: Run tests
       run: npm run test --workspaces --if-present
