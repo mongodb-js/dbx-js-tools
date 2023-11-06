@@ -26,6 +26,8 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: install npm 9
+      run: npm install -g npm@9
     - name: npm clean install 
       run: npm clean-install
     - name: npm clean install workspaces
