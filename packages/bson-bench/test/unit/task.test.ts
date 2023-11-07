@@ -82,16 +82,18 @@ describe('Task', function () {
       it('throws error', async function () {
         const task = new Task({
           documentPath: 'test/documents/array.json',
-          library: 'bson-ext@4.0.0',
+          library: 'bson@6.0.0',
           operation: 'deserialize',
           warmup: 100,
           iterations: 100,
           options: {}
         });
 
+        // bson throws error when passed array as top-level input
         const maybeError = await task.run().catch(e => e);
 
-        expect(maybeError).to.be.instanceOf(Error, 'failed to serialize input object');
+        expect(maybeError).to.be.instanceOf(Error);
+        expect(maybeError).to.have.property('message', 'failed to serialize input object');
       });
     });
   });
