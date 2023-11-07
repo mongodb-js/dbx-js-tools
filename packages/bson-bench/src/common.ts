@@ -128,27 +128,22 @@ export type BenchmarkSpecification = {
   library: string;
 };
 
-export interface IPCMessage {
-  pe: 'returnResult' | 'returnError' | 'runBenchmark';
-  benchmark?: BenchmarkSpecification;
-  result?: BenchmarkResult;
-  error?: Error;
-}
-
-export interface RunBenchmarkMessage extends IPCMessage {
+export interface RunBenchmarkMessage {
   type: 'runBenchmark';
   benchmark: BenchmarkSpecification;
 }
 
-export interface ResultMessage extends IPCMessage {
+export interface ResultMessage {
   type: 'returnResult';
   result: BenchmarkResult;
 }
 
-export interface ErrorMessage extends IPCMessage {
+export interface ErrorMessage {
   type: 'returnError';
   error: Error;
 }
+
+export type IPCMessage = RunBenchmarkMessage | ResultMessage | ErrorMessage;
 
 export type BenchmarkResult = {
   durationMillis: number[];
