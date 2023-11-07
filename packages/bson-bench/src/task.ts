@@ -118,27 +118,27 @@ export class Task {
       },
       metrics: [
         {
-          name: 'megabytes_per_second',
+          name: 'mean_megabytes_per_second',
           type: 'MEAN',
           value: meanThroughputMBps
         },
         {
-          name: 'megabytes_per_second',
+          name: 'median_megabytes_per_second',
           type: 'MEDIAN',
           value: medianThroughputMBps
         },
         {
-          name: 'megabytes_per_second',
+          name: 'min_megabytes_per_second',
           type: 'MIN',
           value: minThroughputMBps
         },
         {
-          name: 'megabytes_per_second',
+          name: 'max_megabytes_per_second',
           type: 'MAX',
           value: maxThroughputMBps
         },
         {
-          name: 'megabytes_per_second',
+          name: 'stddev_megabytes_per_second',
           type: 'STANDARD_DEVIATION',
           value: throughputMBpsStddev
         }
