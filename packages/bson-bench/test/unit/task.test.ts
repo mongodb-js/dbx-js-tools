@@ -82,7 +82,7 @@ describe('Task', function () {
       it('throws error', async function () {
         const task = new Task({
           documentPath: 'test/documents/array.json',
-          library: 'bson@6.0.0',
+          library: 'bson@5',
           operation: 'deserialize',
           warmup: 100,
           iterations: 100,
