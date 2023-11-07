@@ -57,7 +57,7 @@ function run(bson: BSONLib, config: BenchmarkSpecification) {
     case 'deserialize':
       fn = bson.deserialize;
       try {
-        doc = BSON.serialize(doc);
+        doc = bson.serialize(doc);
         documentSizeBytes = doc.byteLength;
       } catch (cause) {
         reportErrorAndQuit(new Error('failed to serialize input object', { cause }));
