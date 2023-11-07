@@ -42,6 +42,13 @@ describe('Task', function () {
     for (const test of testTable) {
       context(`${test.operation} with library specifier: ${test.library}`, function () {
         it('completes successfully', async function () {
+          if (
+            Number(process.versions.node.split('.')[0]) >= 20 &&
+            /bson-ext#.*/.test(test.library)
+          ) {
+            console.log('Skipping installing bson-ext via git tag on Node 20');
+            this.skip();
+          }
           const task = new Task(test);
 
           await task.run();
