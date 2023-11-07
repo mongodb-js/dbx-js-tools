@@ -5,6 +5,7 @@
     "strict": true,
     "alwaysStrict": true,
     "target": "ES2021",
+    "declaration": true,
     "module": "commonJS",
     "moduleResolution": "node",
     "skipLibCheck": true,
