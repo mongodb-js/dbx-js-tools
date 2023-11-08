@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
@@ -26,7 +27,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - name: npm clean install
-      run: npm clean-install --workspaces
+    - name: install npm 9
+      run: npm install -g npm@9
+    - name: npm install 
+      run: npm install
+    - name: npm install workspaces
+      run: npm install --workspaces
     - name: Run tests
       run: npm run test --workspaces --if-present

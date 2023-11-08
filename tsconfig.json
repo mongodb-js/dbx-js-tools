@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "allowJs": false,
+    "checkJs": false,
+    "strict": true,
+    "alwaysStrict": true,
+    "target": "ES2021",
+    "declaration": true,
+    "module": "commonJS",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "lib": [
+      "es2021",
+      "ES2022.Error"
+    ],
+    // We don't make use of tslib helpers, all syntax used is supported by target engine
+    "importHelpers": false,
+    "noEmitHelpers": true,
+    // Never emit error filled code
+    "noEmitOnError": true,
+    // We want the sourcemaps in a separate file
+    "inlineSourceMap": false,
+    "sourceMap": true,
+    // we include sources in the release
+    "inlineSources": false,
+    // Prevents web types from being suggested by vscode.
+    "types": [
+      "node"
+    ]
+  },
+  "ts-node": {
+    "transpileOnly": true,
+    "compiler": "typescript-cached-transpile"
+  }
+}
