@@ -115,20 +115,24 @@ describe('Task', function () {
         checkKeys: true,
         ignoreUndefined: false,
         serializeFunctions: false,
-        index: 0
+        index: 0,
+        validation: { utf8: false }
       };
 
       task = new Task({
         documentPath: 'test/documents/long_largeArray.json',
-        library: 'bson-ext@4.0.0',
+        library: 'bson@4.0.0',
         operation: 'deserialize',
         warmup: 1,
         iterations: 1,
         options
       });
 
-      await task.run();
-
+      task.result = {
+        durationMillis: Array.from({ length: 1000 }, () => 100),
+        documentSizeBytes: 100
+      };
+      task.hasRun = true;
       results = task.getResults();
     });
 
@@ -160,6 +164,64 @@ describe('Task', function () {
 
     it('returns numeric options provided in constructor as provided in the info.args field', function () {
       expect(results.info.args).to.haveOwnProperty('index', 0);
+    });
+
+    describe('when utf8 validation is enabled', function () {
+      const options = {
+        validation: { utf8: true }
+      };
+
+      let results: PerfSendResult;
+
+      before(() => {
+        const task = new Task({
+          documentPath: 'test/documents/long_largeArray.json',
+          library: 'bson@4.0.0',
+          operation: 'deserialize',
+          warmup: 1,
+          iterations: 1,
+          options
+        });
+        task.result = {
+          durationMillis: Array.from({ length: 1000 }, () => 100),
+          documentSizeBytes: 100
+        };
+        task.hasRun = true;
+        results = task.getResults();
+      });
+
+      it('info.args.utf8Validation is 1', function () {
+        expect(results.info.args).to.haveOwnProperty('utf8Validation', 1);
+      });
+    });
+
+    describe('when utf8Validation is disabled', function () {
+      const options = {
+        validation: { utf8: false }
+      };
+
+      let results: PerfSendResult;
+
+      before(() => {
+        const task = new Task({
+          documentPath: 'test/documents/long_largeArray.json',
+          library: 'bson@4.0.0',
+          operation: 'deserialize',
+          warmup: 1,
+          iterations: 1,
+          options
+        });
+        task.result = {
+          durationMillis: Array.from({ length: 1000 }, () => 100),
+          documentSizeBytes: 100
+        };
+        task.hasRun = true;
+        results = task.getResults();
+      });
+
+      it('info.args.utf8Validation is 0', function () {
+        expect(results.info.args).to.haveOwnProperty('utf8Validation', 0);
+      });
     });
   });
 

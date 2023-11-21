@@ -91,10 +91,12 @@ export class Task {
             break;
           // special cases
           case 'validation':
+            // utf8 validation is always on for bson-ext
             output['utf8Validation'] = /^bson-ext/.test(this.benchmark.library)
               ? 1
-              : typeof o[key] === 'boolean'
-              ? Number(o[key])
+              : // if value of boolean for js-bson, convert to number, otherwise assume true
+              typeof o[key]['utf8'] === 'boolean'
+              ? Number(o[key]['utf8'])
               : 1;
             break;
           default:
