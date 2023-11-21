@@ -17,7 +17,7 @@
   "author": "The MongoDB NodeJS Team <dbx-node@mongodb.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "bson": "^6.1.0"
+    "bson": "4.7"
   },
   "directories": {
     "lib": "lib",
