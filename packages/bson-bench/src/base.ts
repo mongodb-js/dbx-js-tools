@@ -7,6 +7,7 @@ import {
   type BenchmarkResult,
   type BenchmarkSpecification,
   type BSONLib,
+  type ConstructibleBSON,
   Package,
   type RunBenchmarkMessage
 } from './common';
@@ -28,13 +29,16 @@ function reportErrorAndQuit(error: Error) {
   process.exit(1);
 }
 
-function run(bson: BSONLib, config: BenchmarkSpecification) {
+function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) {
   let fn:
     | ((b: Uint8Array, options?: any) => any)
     | ((o: any, options?: any) => Uint8Array)
     | undefined = undefined;
   let documentSizeBytes: number;
   let doc: any;
+
+  // Check if this is bson < v4
+  if (!('serialize' in bson)) bson = new bson();
 
   try {
     if (bson.EJSON) doc = bson.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
