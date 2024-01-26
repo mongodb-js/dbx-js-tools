@@ -42,6 +42,9 @@ function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) 
 
   try {
     if (bson.EJSON) doc = bson.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
+    // NOTE: The BSON version used here is bson@4. This is for compatibility with bson-ext as it is
+    // the only version of the js-bson library explicitly compatible with bson-ext and which does
+    // not result in bson-ext throwing an error when running deserialization tests.
     else doc = BSON.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
   } catch (cause) {
     reportErrorAndQuit(new Error('Failed to read test document', { cause }));
