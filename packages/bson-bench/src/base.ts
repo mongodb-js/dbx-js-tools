@@ -38,7 +38,7 @@ function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) 
   let doc: any;
 
   // Check if this is bson < v4
-  if (!('serialize' in bson)) bson = new bson();
+  if (typeof bson === 'function') bson = new bson();
 
   try {
     if (bson.EJSON) doc = bson.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
