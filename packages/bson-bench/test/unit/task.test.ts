@@ -15,6 +15,7 @@ describe('Task', function () {
   const versions = [
     'bson@6.2.0',
     'bson@4.0.0',
+    'bson@1.1.6',
     'bson@5.0.0',
     'bson#v6.1.0',
     'bson-ext@4.0.0',

@@ -7,6 +7,7 @@ import {
   type BenchmarkResult,
   type BenchmarkSpecification,
   type BSONLib,
+  type ConstructibleBSON,
   Package,
   type RunBenchmarkMessage
 } from './common';
@@ -28,7 +29,7 @@ function reportErrorAndQuit(error: Error) {
   process.exit(1);
 }
 
-function run(bson: BSONLib, config: BenchmarkSpecification) {
+function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) {
   let fn:
     | ((b: Uint8Array, options?: any) => any)
     | ((o: any, options?: any) => Uint8Array)
@@ -36,8 +37,14 @@ function run(bson: BSONLib, config: BenchmarkSpecification) {
   let documentSizeBytes: number;
   let doc: any;
 
+  // Check if this is bson < v4
+  if (typeof bson === 'function') bson = new bson();
+
   try {
     if (bson.EJSON) doc = bson.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
+    // NOTE: The BSON version used here is bson@4. This is for compatibility with bson-ext as it is
+    // the only version of the js-bson library explicitly compatible with bson-ext and which does
+    // not result in bson-ext throwing an error when running deserialization tests.
     else doc = BSON.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
   } catch (cause) {
     reportErrorAndQuit(new Error('Failed to read test document', { cause }));

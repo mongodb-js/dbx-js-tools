@@ -112,6 +112,10 @@ export interface BSONLib {
   EJSON?: any;
 }
 
+export interface ConstructibleBSON {
+  new (): BSONLib;
+}
+
 export type BenchmarkSpecification = {
   /** Path to test document */
   documentPath: string;
