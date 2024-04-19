@@ -11,7 +11,6 @@ import {
   Package,
   type RunBenchmarkMessage
 } from './common';
-/* eslint-enable @typescript-eslint/no-unused-vars */
 
 function reportResultAndQuit(result: BenchmarkResult) {
   if (process.send) process?.send({ type: 'returnResult', result });
