@@ -5,13 +5,15 @@ import process from 'node:process';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-const { DRIVER_PATH } = process.env
-const { MongoClient, GridFSBucket } = await import(DRIVER_PATH ?? 'mongodb')
+const { MONGODB_DRIVER_PATH = '' } = process.env
+const { MongoClient, GridFSBucket } = await import(
+  MONGODB_DRIVER_PATH.length != 0 ? MONGODB_DRIVER_PATH : 'mongodb'
+)
 
 const DB_NAME = 'perftest';
 const COLLECTION_NAME = 'corpus';
 
-const SPEC_DIRECTORY = path.resolve(__dirname, 'spec');
+const SPEC_DIRECTORY = path.resolve(import.meta.dirname, '..', '..', 'src', 'driverBench', 'spec');
 
 export function loadSpecFile(filePath): Buffer;
 export function loadSpecFile(filePath, encoding): Buffer;
@@ -26,7 +28,7 @@ export function loadSpecString(filePath) {
 }
 
 export function makeClient() {
-  this.client = new MongoClient(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017');
+  this.client = new MongoClient(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017', {serverSelectionTimeoutMS: 2000});
 }
 
 export function connectClient() {

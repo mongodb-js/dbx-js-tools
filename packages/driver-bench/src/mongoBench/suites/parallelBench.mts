@@ -11,7 +11,7 @@ import { makeClient, disconnectClient, dropDb, initBucket, dropBucket, initColle
 
 import { EJSON } from 'bson';
 
-const benchmarkFileDirectory = resolve(__dirname, '..', '..', 'driverBench', 'spec', 'parallel');
+const benchmarkFileDirectory = resolve(import.meta.dirname, '..', '..', 'driverBench', 'spec', 'parallel');
 
 async function initTemporaryDirectory() {
   const temporaryDirectory = resolve(benchmarkFileDirectory, 'downloads');
