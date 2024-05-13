@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "packages/bson-bench",
-    "packages/eslint-config"
+    "packages/driver-bench"
   ],
   "devDependencies": {
     "@tsconfig/node16": "^16.1.3",

@@ -1,0 +1,13 @@
+{
+  "name": "driver-bench",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "node ./etc/prepare.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
