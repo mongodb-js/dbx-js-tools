@@ -1,6 +1,6 @@
-const { Readable } = require('stream');
-const { pipeline } = require('stream/promises');
-const {
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import {
   loadSpecFile,
   makeLoadJSON,
   makeClient,
@@ -16,7 +16,7 @@ const {
   dropBucket,
   initBucket,
   writeSingleByteFileToBucket
-} = require('../../driverBench/common');
+} from '../../driverBench/common.mjs';
 
 function loadGridFs() {
   this.bin = loadSpecFile(['single_and_multi_document', 'gridfs_large.bin']);
@@ -32,7 +32,7 @@ async function gridFsUpload() {
   await pipeline(uploadData, uploadStream);
 }
 
-function makeMultiBench(suite) {
+export function makeMultiBench(suite) {
   return suite
     .benchmark('findManyAndEmptyCursor', benchmark =>
       benchmark
@@ -141,5 +141,3 @@ function makeMultiBench(suite) {
         .teardown(disconnectClient)
     );
 }
-
-module.exports = { makeMultiBench };

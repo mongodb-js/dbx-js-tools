@@ -1,17 +1,6 @@
-const {
-  makeClient,
-  connectClient,
-  initDb,
-  disconnectClient,
-  dropDb,
-  initCollection,
-  createCollection,
-  dropCollection,
-  makeLoadJSON,
-  makeLoadTweets
-} = require('../../driverBench/common');
+import { makeClient, connectClient, initDb, disconnectClient, dropDb, initCollection, createCollection, dropCollection, makeLoadJSON, makeLoadTweets } from '../../driverBench/common.mjs';
 
-function makeSingleBench(suite) {
+export function makeSingleBench(suite) {
   suite
     .benchmark('runCommand', benchmark =>
       benchmark
@@ -95,5 +84,3 @@ function makeSingleBench(suite) {
         .teardown(disconnectClient)
     );
 }
-
-module.exports = { makeSingleBench };

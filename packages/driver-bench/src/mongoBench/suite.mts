@@ -1,8 +1,8 @@
-'use strict';
+import { Benchmark } from "./benchmark.mjs";
 
-const Benchmark = require('./benchmark');
+export class Suite {
+  private children: Record<string, Benchmark>;
 
-class Suite {
   constructor() {
     this.children = {};
   }
@@ -44,5 +44,3 @@ class Suite {
     return this.children;
   }
 }
-
-module.exports = Suite;

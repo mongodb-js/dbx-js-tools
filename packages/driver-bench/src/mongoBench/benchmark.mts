@@ -1,6 +1,13 @@
-'use strict';
+export class Benchmark {
+  private _task: () => void;
+  private _setup: (() => void)[];
+  private _beforeTask: (() => void)[];
+  private _afterTask: (() => void)[];
+  private _teardown: (() => void)[];
+  private _taskSize: number | null;
+  private _description: string | null;
+  private _taskType: string;
 
-class Benchmark {
   constructor() {
     // The Task itself
     this._task = null;
@@ -201,5 +208,3 @@ class Benchmark {
     };
   }
 }
-
-module.exports = Benchmark;

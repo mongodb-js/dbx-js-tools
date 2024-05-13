@@ -1,8 +1,5 @@
-'use strict';
-
-const CONSTANTS = require('./constants');
-const { performance } = require('perf_hooks');
-const Suite = require('./suite');
+import * as CONSTANTS from './constants.mjs';
+import { Suite } from './suite.mjs'
 
 const PERCENTILES = [10, 25, 50, 75, 95, 98, 99];
 function percentileIndex(percentile, total) {
@@ -51,8 +48,21 @@ function calculateMicroBench(benchmark, data) {
   return benchmark.taskSize / medianExecution;
 }
 
-class Runner {
-  constructor(options) {
+export type RunnerOptions = {
+  minExecutionTime?: number;
+  maxExecutionTime?: number;
+  minExecutionCount?: number;
+  reporter?: (message?: any, ...optionalParams: any[]) => void;
+}
+
+export class Runner {
+  private minExecutionTime: number;
+  private maxExecutionTime: number;
+  private minExecutionCount: number;
+  private reporter: (message?: any, ...optionalParams: any[]) => void;
+  private children: Record<string, Suite>;
+
+  constructor(options?: RunnerOptions) {
     options = options || {};
     this.minExecutionTime = options.minExecutionTime || CONSTANTS.DEFAULT_MIN_EXECUTION_TIME;
     this.maxExecutionTime = options.maxExecutionTime || CONSTANTS.DEFAULT_MAX_EXECUTION_TIME;
@@ -99,7 +109,7 @@ class Runner {
 
   async run() {
     this.reporter(`Running Benchmarks`);
-    const result = {};
+    const result: Record<string, Record<string, number>> = {};
 
     for (const [suiteName, suite] of Object.entries(this.children)) {
       this.reporter(`  Executing suite "${suiteName}"`);
@@ -115,11 +125,11 @@ class Runner {
    *
    * @returns {{string: number | undefined}}
    */
-  async _runSuite(suite) {
+  async _runSuite(suite: Suite) {
     const benchmarks = Object.entries(suite.getBenchmarks()).map(([name, benchmark]) => [
       name,
       benchmark.toObj()
-    ]);
+    ] as const);
 
     const result = {};
 
@@ -186,5 +196,3 @@ class Runner {
     return NaN;
   }
 }
-
-module.exports = Runner;

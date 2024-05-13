@@ -1,7 +1,9 @@
 /* eslint-disable no-restricted-modules */
-const chalk = require('chalk');
-const { List } = require('../../../lib/utils');
-const { createHistogram } = require('perf_hooks');
+import chalk from 'chalk';
+// import { List } from 'mongodb/lib/utils';
+declare const List: any;
+// FIXME: if you want to run these you will need to manually specify the import path.
+import { createHistogram } from 'perf_hooks';
 
 const iterations = 100;
 const defaultItemsSize = 100000;

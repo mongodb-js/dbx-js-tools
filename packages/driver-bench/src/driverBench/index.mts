@@ -1,17 +1,12 @@
-'use strict';
 
-const MongoBench = require('../mongoBench');
-const os = require('node:os');
-
-const Runner = MongoBench.Runner;
+import os from 'node:os'
+import { Runner } from '../mongoBench/index.mjs'
+import { inspect } from 'util';
+import { writeFile } from 'fs/promises';
+import { makeParallelBenchmarks, makeSingleBench, makeMultiBench } from '../mongoBench/suites/index.mjs';
 
 let bsonType = 'js-bson';
 // TODO(NODE-4606): test against different driver configurations in CI
-
-const { inspect } = require('util');
-const { writeFile } = require('fs/promises');
-const { makeParallelBenchmarks, makeSingleBench, makeMultiBench } = require('../mongoBench/suites');
-
 const hw = os.cpus();
 const ram = os.totalmem() / 1024 ** 3;
 const platform = { name: hw[0].model, cores: hw.length, ram: `${ram}GB` };

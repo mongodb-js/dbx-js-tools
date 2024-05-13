@@ -1,24 +1,15 @@
 'use strict';
 
-const { createReadStream, createWriteStream } = require('fs');
-const { rm, mkdir, readdir } = require('fs/promises');
-const { resolve } = require('path');
-const { Readable } = require('stream');
-const readline = require('readline');
-const {
-  makeClient,
-  disconnectClient,
-  dropDb,
-  initBucket,
-  dropBucket,
-  initCollection,
-  initDb,
-  connectClient,
-  createCollection,
-  dropCollection
-} = require('../../driverBench/common');
-const { pipeline } = require('stream/promises');
-const { EJSON } = require('bson');
+import readline from 'node:readline'
+import { createReadStream, createWriteStream } from 'node:fs';
+import { rm, mkdir, readdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+
+import { makeClient, disconnectClient, dropDb, initBucket, dropBucket, initCollection, initDb, connectClient, createCollection, dropCollection } from '../../driverBench/common.mjs';
+
+import { EJSON } from 'bson';
 
 const benchmarkFileDirectory = resolve(__dirname, '..', '..', 'driverBench', 'spec', 'parallel');
 
@@ -112,7 +103,7 @@ async function gridfsMultiFileDownload() {
  * @param {Suite} suite
  * @returns Benchmark
  */
-function makeParallelBenchmarks(suite) {
+export function makeParallelBenchmarks(suite) {
   return suite
     .benchmark('ldjsonMultiFileUpload', benchmark =>
       // https://github.com/mongodb/specifications/blob/master/source/benchmarking/benchmarking.rst#ldjson-multi-file-import
@@ -195,5 +186,3 @@ function makeParallelBenchmarks(suite) {
         .teardown(disconnectClient)
     );
 }
-
-module.exports = { makeParallelBenchmarks };

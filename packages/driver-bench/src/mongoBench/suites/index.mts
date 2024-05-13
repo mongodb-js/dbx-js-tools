@@ -1,9 +1,3 @@
-const { makeParallelBenchmarks } = require('./parallelBench');
-const { makeSingleBench } = require('./singleBench');
-const { makeMultiBench } = require('./multiBench');
-
-module.exports = {
-  makeParallelBenchmarks,
-  makeSingleBench,
-  makeMultiBench
-};
+export { makeParallelBenchmarks }  from './parallelBench.mjs';
+export { makeSingleBench }  from './singleBench.mjs';
+export { makeMultiBench }  from './multiBench.mjs';

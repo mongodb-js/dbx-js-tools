@@ -1,5 +1,3 @@
 'use strict';
 
-module.exports = {
-  Runner: require('./runner')
-};
+export {Runner} from './runner.mjs'

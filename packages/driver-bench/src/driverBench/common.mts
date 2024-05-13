@@ -1,79 +1,81 @@
-'use strict';
 
-const fs = require('fs');
-const path = require('path');
-const { Readable } = require('stream');
-const { pipeline } = require('stream/promises');
-const { MongoClient } = require('../../..');
-const { GridFSBucket } = require('../../..');
-// eslint-disable-next-line no-restricted-modules
-const { MONGODB_ERROR_CODES } = require('../../../lib/error');
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+
+const { DRIVER_PATH } = process.env
+const { MongoClient, GridFSBucket } = await import(DRIVER_PATH ?? 'mongodb')
 
 const DB_NAME = 'perftest';
 const COLLECTION_NAME = 'corpus';
 
 const SPEC_DIRECTORY = path.resolve(__dirname, 'spec');
 
-function loadSpecFile(filePath, encoding) {
+export function loadSpecFile(filePath): Buffer;
+export function loadSpecFile(filePath, encoding): Buffer;
+export function loadSpecFile(filePath, encoding: 'utf8'): string;
+export function loadSpecFile(filePath, encoding?: BufferEncoding): string | Buffer {
   const fp = [SPEC_DIRECTORY].concat(filePath);
   return fs.readFileSync(path.join.apply(path, fp), encoding);
 }
 
-function loadSpecString(filePath) {
+export function loadSpecString(filePath) {
   return loadSpecFile(filePath, 'utf8');
 }
 
-function makeClient() {
+export function makeClient() {
   this.client = new MongoClient(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017');
 }
 
-function connectClient() {
+export function connectClient() {
   return this.client.connect();
 }
 
-function disconnectClient() {
+export function disconnectClient() {
   this.client.close();
 }
 
-function initDb() {
+export function initDb() {
   this.db = this.client.db(DB_NAME);
 }
 
-function dropDb() {
+export function dropDb() {
   return this.db.dropDatabase();
 }
 
-function createCollection() {
+export function createCollection() {
   return this.db.createCollection(COLLECTION_NAME);
 }
 
-function initCollection() {
+export function initCollection() {
   this.collection = this.db.collection(COLLECTION_NAME);
 }
 
-function dropCollection() {
+export function dropCollection() {
   return this.collection.drop().catch(e => {
-    if (e.code !== MONGODB_ERROR_CODES.NamespaceNotFound) {
+    if (e.code !== 26 /* NamespaceNotFound */) {
       throw e;
     }
   });
 }
 
-function initBucket() {
+export function initBucket() {
   this.bucket = new GridFSBucket(this.db);
 }
 
-function dropBucket() {
+export function dropBucket() {
   return this.bucket && this.bucket.drop();
 }
 
-function makeLoadJSON(name) {
+export function makeLoadJSON(name) {
   return function () {
     this.doc = JSON.parse(loadSpecString(['single_and_multi_document', name]));
   };
 }
 
-function makeLoadTweets(makeId) {
+export function makeLoadTweets(makeId) {
   return function () {
     const doc = this.doc;
     const tweets = [];
@@ -85,7 +87,7 @@ function makeLoadTweets(makeId) {
   };
 }
 
-function makeLoadInsertDocs(numberOfOperations) {
+export function makeLoadInsertDocs(numberOfOperations) {
   return function () {
     this.docs = [];
     for (let i = 0; i < numberOfOperations; i += 1) {
@@ -94,27 +96,8 @@ function makeLoadInsertDocs(numberOfOperations) {
   };
 }
 
-async function writeSingleByteFileToBucket() {
+export async function writeSingleByteFileToBucket() {
   const stream = this.bucket.openUploadStream('setup-file.txt');
   const oneByteFile = Readable.from('a');
   return pipeline(oneByteFile, stream);
 }
-
-module.exports = {
-  makeClient,
-  connectClient,
-  disconnectClient,
-  initDb,
-  dropDb,
-  createCollection,
-  initCollection,
-  dropCollection,
-  makeLoadJSON,
-  loadSpecFile,
-  loadSpecString,
-  initBucket,
-  dropBucket,
-  makeLoadTweets,
-  makeLoadInsertDocs,
-  writeSingleByteFileToBucket
-};
