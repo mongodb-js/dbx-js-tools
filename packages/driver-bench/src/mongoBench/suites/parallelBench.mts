@@ -19,6 +19,7 @@ import {
   initDb,
   makeClient
 } from '../../driverBench/common.mjs';
+import type { Suite } from '../suite.mjs';
 
 const benchmarkFileDirectory = resolve(
   import.meta.dirname,
@@ -114,7 +115,7 @@ async function gridfsMultiFileDownload() {
   await Promise.all(downloads);
 }
 
-export function makeParallelBenchmarks(suite) {
+export function makeParallelBenchmarks(suite: Suite): Suite {
   return suite
     .benchmark('ldjsonMultiFileUpload', benchmark =>
       // https://github.com/mongodb/specifications/blob/master/source/benchmarking/benchmarking.rst#ldjson-multi-file-import

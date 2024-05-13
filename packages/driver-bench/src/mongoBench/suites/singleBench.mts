@@ -10,9 +10,10 @@ import {
   makeLoadJSON,
   makeLoadTweets
 } from '../../driverBench/common.mjs';
+import type { Suite } from '../suite.mjs';
 
-export function makeSingleBench(suite) {
-  suite
+export function makeSingleBench(suite: Suite): Suite {
+  return suite
     .benchmark('runCommand', benchmark =>
       benchmark
         .taskSize(0.16)

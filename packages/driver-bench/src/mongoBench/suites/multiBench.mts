@@ -18,6 +18,7 @@ import {
   makeLoadTweets,
   writeSingleByteFileToBucket
 } from '../../driverBench/common.mjs';
+import type { Suite } from '../suite.mjs';
 
 function loadGridFs() {
   this.bin = loadSpecFile(['single_and_multi_document', 'gridfs_large.bin']);
@@ -33,7 +34,7 @@ async function gridFsUpload() {
   await pipeline(uploadData, uploadStream);
 }
 
-export function makeMultiBench(suite) {
+export function makeMultiBench(suite: Suite): Suite {
   return suite
     .benchmark('findManyAndEmptyCursor', benchmark =>
       benchmark
