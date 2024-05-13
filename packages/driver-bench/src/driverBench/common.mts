@@ -1,14 +1,13 @@
-
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-const { MONGODB_DRIVER_PATH = '' } = process.env
+const { MONGODB_DRIVER_PATH = '' } = process.env;
 const { MongoClient, GridFSBucket } = await import(
-  MONGODB_DRIVER_PATH.length != 0 ? MONGODB_DRIVER_PATH : 'mongodb'
-)
+  MONGODB_DRIVER_PATH.length !== 0 ? MONGODB_DRIVER_PATH : 'mongodb'
+);
 
 const DB_NAME = 'perftest';
 const COLLECTION_NAME = 'corpus';
@@ -20,7 +19,7 @@ export function loadSpecFile(filePath, encoding): Buffer;
 export function loadSpecFile(filePath, encoding: 'utf8'): string;
 export function loadSpecFile(filePath, encoding?: BufferEncoding): string | Buffer {
   const fp = [SPEC_DIRECTORY].concat(filePath);
-  return fs.readFileSync(path.join.apply(path, fp), encoding);
+  return fs.readFileSync(path.join(...fp), encoding);
 }
 
 export function loadSpecString(filePath) {
@@ -28,7 +27,9 @@ export function loadSpecString(filePath) {
 }
 
 export function makeClient() {
-  this.client = new MongoClient(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017', {serverSelectionTimeoutMS: 2000});
+  this.client = new MongoClient(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017', {
+    serverSelectionTimeoutMS: 2000
+  });
 }
 
 export function connectClient() {

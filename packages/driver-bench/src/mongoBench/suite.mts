@@ -1,4 +1,4 @@
-import { Benchmark } from "./benchmark.mjs";
+import { Benchmark } from './benchmark.mjs';
 
 export class Suite {
   private children: Record<string, Benchmark>;
@@ -8,12 +8,10 @@ export class Suite {
   }
 
   /**
-   *
-   * @param {string} name the name of the benchmark
-   * @param {(benchmark: Benchmark) => void} fn a function that configures the `benchmark` parameter
-   * @returns {this} this
+   * @param name - the name of the benchmark
+   * @param fn - a function that configures the `benchmark` parameter
    */
-  benchmark(name, fn) {
+  benchmark(name: string, fn: (benchmark: Benchmark) => Benchmark | null | undefined): this {
     if (typeof name !== 'string' || !name) {
       throw new TypeError(`Argument "name" (${name}) must be a non-zero length string`);
     }

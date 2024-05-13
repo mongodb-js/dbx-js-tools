@@ -1,17 +1,33 @@
-'use strict';
-
-import readline from 'node:readline'
 import { createReadStream, createWriteStream } from 'node:fs';
-import { rm, mkdir, readdir } from 'node:fs/promises';
+import { mkdir, readdir, rm } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import readline from 'node:readline';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-import { makeClient, disconnectClient, dropDb, initBucket, dropBucket, initCollection, initDb, connectClient, createCollection, dropCollection } from '../../driverBench/common.mjs';
-
 import { EJSON } from 'bson';
 
-const benchmarkFileDirectory = resolve(import.meta.dirname, '..', '..', 'driverBench', 'spec', 'parallel');
+import {
+  connectClient,
+  createCollection,
+  disconnectClient,
+  dropBucket,
+  dropCollection,
+  dropDb,
+  initBucket,
+  initCollection,
+  initDb,
+  makeClient
+} from '../../driverBench/common.mjs';
+
+const benchmarkFileDirectory = resolve(
+  import.meta.dirname,
+  '..',
+  '..',
+  'driverBench',
+  'spec',
+  'parallel'
+);
 
 async function initTemporaryDirectory() {
   const temporaryDirectory = resolve(benchmarkFileDirectory, 'downloads');
@@ -98,11 +114,6 @@ async function gridfsMultiFileDownload() {
   await Promise.all(downloads);
 }
 
-/**
- *
- * @param {Suite} suite
- * @returns Benchmark
- */
 export function makeParallelBenchmarks(suite) {
   return suite
     .benchmark('ldjsonMultiFileUpload', benchmark =>

@@ -1,3 +1,14 @@
+export type BenchmarkLike = {
+  _taskType: string;
+  task: () => void;
+  taskSize: number;
+  description: string;
+  setup: () => Promise<void>;
+  beforeTask: () => Promise<void>;
+  afterTask: () => Promise<void>;
+  teardown: () => Promise<void>;
+};
+
 export class Benchmark {
   private _task: () => void;
   private _setup: (() => void)[];
@@ -27,15 +38,14 @@ export class Benchmark {
   /**
    * Set the task to benchmark
    *
-   * @param {Function} fn The task to benchmark
-   * @returns {this} this
+   * @param fn - The task to benchmark
    */
-  task(fn) {
+  task(fn): this {
     if (typeof fn !== 'function') {
       throw new TypeError(`Argument fn (${fn}) must be a function`);
     }
 
-    if (this._task !== null) {
+    if (this._task != null) {
       throw new Error('You cannot have more than one task per benchmark');
     }
 
@@ -47,50 +57,45 @@ export class Benchmark {
   /**
    * Add a setup lifecycle hook
    *
-   * @param {Function|Function[]} fn The lifecycle hook
-   * @returns {this} this
+   * @param fn - The lifecycle hook
    */
-  setup(fn) {
+  setup(fn): this {
     return this._pushLifecycleHook(this._setup, fn);
   }
 
   /**
    * Add a beforeTask lifecycle hook
    *
-   * @param {Function|Function[]} fn The lifecycle hook
-   * @returns {this} this
+   * @param fn - The lifecycle hook
    */
-  beforeTask(fn) {
+  beforeTask(fn): this {
     return this._pushLifecycleHook(this._beforeTask, fn);
   }
 
   /**
    * Add an afterTask lifecycle hook
    *
-   * @param {Function|Function[]} fn The lifecycle hook
-   * @returns {this} this
+   * @param fn - The lifecycle hook
    */
-  afterTask(fn) {
+  afterTask(fn): this {
     return this._pushLifecycleHook(this._afterTask, fn);
   }
 
   /**
    * Add a teardown lifecycle hook
    *
-   * @param {Function|Function[]} fn The lifecycle hook
-   * @returns {this} this
+   * @param fn - The lifecycle hook
    */
-  teardown(fn) {
+  teardown(fn): this {
     return this._pushLifecycleHook(this._teardown, fn);
   }
 
   /**
    * Set the Task Size
    *
-   * @param {number} size The Task Size in MB
-   * @returns {this} this
+   * @param size - The Task Size in MB
    */
-  taskSize(size) {
+  taskSize(size: number): this {
     if (!(Number.isFinite(size) && size > 0)) {
       throw new TypeError(`size (${size}) must be a finite number greater than zero`);
     }
@@ -107,9 +112,9 @@ export class Benchmark {
   /**
    * Sets the task type - either a synchronous or asynchronous task.  The default is async.
    *
-   * @param {'async' | 'sync'} type - the type of task
+   * @param type - the type of task
    */
-  taskType(type) {
+  taskType(type: 'async' | 'sync'): this {
     if (['async', 'sync'].includes(type)) {
       this._taskType = type;
     } else {
@@ -124,10 +129,9 @@ export class Benchmark {
   /**
    * Set the Description
    *
-   * @param {string} description The description of the benchmark
-   * @returns {this} this
+   * @param description - The description of the benchmark
    */
-  description(description) {
+  description(description: string): this {
     if (typeof description !== 'string' || !description) {
       throw new TypeError(`description (${description}) must be a non-zero length string`);
     }
@@ -154,11 +158,13 @@ export class Benchmark {
     }
   }
 
-  toObj() {
+  toObj(): BenchmarkLike {
     return {
       // Required Fields
       task: this._task,
       taskSize: this._taskSize,
+
+      _taskType: this._taskType,
 
       // Optional Fields
       description: this._description || `Performance test`,
@@ -169,11 +175,7 @@ export class Benchmark {
     };
   }
 
-  /**
-   * @param {any} hookList
-   * @param {any} fn
-   */
-  _pushLifecycleHook(hookList, fn) {
+  _pushLifecycleHook(hookList, fn): this {
     if (Array.isArray(fn)) {
       fn.forEach(f => this._pushLifecycleHook(hookList, f));
       return this;
@@ -192,18 +194,14 @@ export class Benchmark {
    * task function and resolves once all are completed.
    *
    * The returned function will reject if any of the task functions fails.
-   *
-   * @param {any} arr
-   * @return {() => Promise<void>}
    */
-  _convertArrayToAsyncPipeFn(arr) {
+  _convertArrayToAsyncPipeFn(arr): () => Promise<void> {
     const array = arr.length ? arr : [];
     return async function () {
       // copy the array to guard against modification
       const chain = [].concat(array);
-      const context = this;
       for (const fn of chain) {
-        await fn.call(context);
+        await fn.call(this);
       }
     };
   }

@@ -1,3 +1,1 @@
-'use strict';
-
-export {Runner} from './runner.mjs'
+export { Runner } from './runner.mjs';

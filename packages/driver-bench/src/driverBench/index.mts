@@ -1,11 +1,16 @@
+import os from 'node:os';
 
-import os from 'node:os'
-import { Runner } from '../mongoBench/index.mjs'
-import { inspect } from 'util';
 import { writeFile } from 'fs/promises';
-import { makeParallelBenchmarks, makeSingleBench, makeMultiBench } from '../mongoBench/suites/index.mjs';
+import { inspect } from 'util';
 
-let bsonType = 'js-bson';
+import { Runner } from '../mongoBench/index.mjs';
+import {
+  makeMultiBench,
+  makeParallelBenchmarks,
+  makeSingleBench
+} from '../mongoBench/suites/index.mjs';
+
+const bsonType = 'js-bson';
 // TODO(NODE-4606): test against different driver configurations in CI
 const hw = os.cpus();
 const ram = os.totalmem() / 1024 ** 3;

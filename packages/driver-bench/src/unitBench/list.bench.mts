@@ -1,9 +1,8 @@
-/* eslint-disable no-restricted-modules */
 import chalk from 'chalk';
-// import { List } from 'mongodb/lib/utils';
-declare const List: any;
 // FIXME: if you want to run these you will need to manually specify the import path.
 import { createHistogram } from 'perf_hooks';
+// import { List } from 'mongodb/lib/utils';
+declare const List: any;
 
 const iterations = 100;
 const defaultItemsSize = 100000;
@@ -57,6 +56,7 @@ const testListShift = () => {
 };
 
 const testDenqueShift = () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Denque = require('denque');
   let bigDenque = new Denque(makeBigArray());
   const h = createHistogram();
@@ -97,6 +97,7 @@ const testListPush = () => {
 };
 
 const testDenquePush = () => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Denque = require('denque');
   let bigDenque = new Denque([]);
   const h = createHistogram();

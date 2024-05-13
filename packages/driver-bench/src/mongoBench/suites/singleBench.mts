@@ -1,4 +1,15 @@
-import { makeClient, connectClient, initDb, disconnectClient, dropDb, initCollection, createCollection, dropCollection, makeLoadJSON, makeLoadTweets } from '../../driverBench/common.mjs';
+import {
+  connectClient,
+  createCollection,
+  disconnectClient,
+  dropCollection,
+  dropDb,
+  initCollection,
+  initDb,
+  makeClient,
+  makeLoadJSON,
+  makeLoadTweets
+} from '../../driverBench/common.mjs';
 
 export function makeSingleBench(suite) {
   suite

@@ -1,5 +1,3 @@
-'use strict';
-
 const MINUTE_TO_MS = 60 * 1e3;
 const FIVE_MINUTES_TO_MS = MINUTE_TO_MS * 5;
 

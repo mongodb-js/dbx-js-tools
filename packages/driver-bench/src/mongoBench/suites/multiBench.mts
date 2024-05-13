@@ -1,20 +1,21 @@
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+
 import {
-  loadSpecFile,
-  makeLoadJSON,
-  makeClient,
   connectClient,
-  initDb,
-  dropDb,
-  initCollection,
-  makeLoadTweets,
-  disconnectClient,
-  makeLoadInsertDocs,
   createCollection,
-  dropCollection,
+  disconnectClient,
   dropBucket,
+  dropCollection,
+  dropDb,
   initBucket,
+  initCollection,
+  initDb,
+  loadSpecFile,
+  makeClient,
+  makeLoadInsertDocs,
+  makeLoadJSON,
+  makeLoadTweets,
   writeSingleByteFileToBucket
 } from '../../driverBench/common.mjs';
 
@@ -45,7 +46,7 @@ export function makeMultiBench(suite) {
         .setup(initCollection)
         .setup(makeLoadTweets(false))
         .task(async function () {
-          // eslint-disable-next-line no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           for await (const _ of this.collection.find({})) {
             // do nothing
           }
@@ -132,7 +133,7 @@ export function makeMultiBench(suite) {
           this.uploadData = undefined;
         })
         .task(async function () {
-          // eslint-disable-next-line no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           for await (const _ of this.bucket.openDownloadStream(this.id)) {
             // do nothing
           }

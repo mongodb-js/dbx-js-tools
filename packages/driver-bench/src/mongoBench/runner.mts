@@ -1,5 +1,6 @@
+import type { BenchmarkLike } from './benchmark.mjs';
 import * as CONSTANTS from './constants.mjs';
-import { Suite } from './suite.mjs'
+import { Suite } from './suite.mjs';
 
 const PERCENTILES = [10, 25, 50, 75, 95, 98, 99];
 function percentileIndex(percentile, total) {
@@ -27,12 +28,11 @@ async function timeAsyncTask(task, ctx) {
  *
  * This function internally calculates the 50th percentile execution time and uses
  * that as the median.
- *
- * @param {Benchmark} benchmark
- * @param {{ rawData: number[], count: number}} data
- * @returns number
  */
-function calculateMicroBench(benchmark, data) {
+function calculateMicroBench(
+  benchmark: BenchmarkLike,
+  data: { rawData: number[]; count: number }
+): number {
   const rawData = data.rawData;
   const count = data.count;
 
@@ -53,7 +53,7 @@ export type RunnerOptions = {
   maxExecutionTime?: number;
   minExecutionCount?: number;
   reporter?: (message?: any, ...optionalParams: any[]) => void;
-}
+};
 
 export class Runner {
   private minExecutionTime: number;
@@ -67,22 +67,16 @@ export class Runner {
     this.minExecutionTime = options.minExecutionTime || CONSTANTS.DEFAULT_MIN_EXECUTION_TIME;
     this.maxExecutionTime = options.maxExecutionTime || CONSTANTS.DEFAULT_MAX_EXECUTION_TIME;
     this.minExecutionCount = options.minExecutionCount || CONSTANTS.DEFAULT_MIN_EXECUTION_COUNT;
-    this.reporter =
-      options.reporter ||
-      function () {
-        console.log.apply(console, arguments);
-      };
+    this.reporter = options.reporter ?? console.log.bind(console);
     this.children = {};
   }
 
   /**
    * Adds a new test suite to the runner
-   * @param {string} name - the name of the test suite
-   * @param {(suite: Suite) => void} fn a function that registers a set of benchmarks onto the
-   *  parameter `suite`
-   * @returns {this} this
+   * @param name - the name of the test suite
+   * @param fn - a function that registers a set of benchmarks onto the parameter `suite`
    */
-  suite(name, fn) {
+  suite(name: string, fn: (suite: Suite) => Suite | null | undefined): this {
     if (typeof name !== 'string' || !name) {
       throw new TypeError(`Argument "name" (${name}) must be a non-zero length string`);
     }
@@ -119,19 +113,12 @@ export class Runner {
     return result;
   }
 
-  /**
-   *
-   * @param {Suite} suite
-   *
-   * @returns {{string: number | undefined}}
-   */
-  async _runSuite(suite: Suite) {
-    const benchmarks = Object.entries(suite.getBenchmarks()).map(([name, benchmark]) => [
-      name,
-      benchmark.toObj()
-    ] as const);
+  async _runSuite(suite: Suite): Promise<Record<string, number>> {
+    const benchmarks = Object.entries(suite.getBenchmarks()).map(
+      ([name, benchmark]) => [name, benchmark.toObj()] as const
+    );
 
-    const result = {};
+    const result: Record<string, number> = {};
 
     for (const [name, benchmark] of benchmarks) {
       this.reporter(`    Executing Benchmark "${name}"`);
@@ -144,11 +131,10 @@ export class Runner {
   /**
    * Runs a single benchmark.
    *
-   * @param {Benchmark} benchmark
-   * @returns {Promise<number>} A promise containing the mb/s for the benchmark.  This function never rejects,
+   * @returns A promise containing the mb/s for the benchmark.  This function never rejects,
    * it instead returns Promise<NaN> if there is an error.
    */
-  async _runBenchmark(benchmark) {
+  async _runBenchmark(benchmark: BenchmarkLike): Promise<number> {
     const ctx = {};
     try {
       await benchmark.setup.call(ctx);
@@ -160,13 +146,10 @@ export class Runner {
     }
   }
 
-  /**
-   *
-   * @param {Benchmark} benchmark
-   * @param {any} ctx
-   * @returns {{ rawData: number[], count: number}}
-   */
-  async _loopTask(benchmark, ctx) {
+  async _loopTask(
+    benchmark: BenchmarkLike,
+    ctx: any
+  ): Promise<{ rawData: number[]; count: number }> {
     const start = performance.now();
     const rawData = [];
     const minExecutionCount = this.minExecutionCount;
