@@ -25,6 +25,8 @@ const benchmarkFileDirectory = resolve(
   import.meta.dirname,
   '..',
   '..',
+  '..',
+  'src',
   'driverBench',
   'spec',
   'parallel'

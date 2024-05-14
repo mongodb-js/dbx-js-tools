@@ -123,6 +123,7 @@ export class Runner {
     for (const [name, benchmark] of benchmarks) {
       this.reporter(`    Executing Benchmark "${name}"`);
       result[name] = await this._runBenchmark(benchmark);
+      this.reporter(`    Result ${result[name].toFixed(4)} MB/s`);
     }
 
     return result;
