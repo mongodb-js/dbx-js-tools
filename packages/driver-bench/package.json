@@ -2,17 +2,17 @@
   "name": "driver-bench",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "module": "./lib/mod.mjs",
   "bin": {
-    "mndb": "./lib/cli.js"
+    "mndb": "./lib/cli.mjs"
   },
   "scripts": {
     "test": "echo \"Warning: no test specified\" && exit 0",
     "prepare": "tsc"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "The MongoDB NodeJS Team <dbx-node@mongodb.com>",
+  "license": "Apache-2.0",
   "dependencies": {
     "bson": "^6.7.0"
   }

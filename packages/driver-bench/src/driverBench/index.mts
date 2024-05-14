@@ -1,7 +1,6 @@
 import os from 'node:os';
-
-import { writeFile } from 'fs/promises';
-import { inspect } from 'util';
+import { writeFile } from 'node:fs/promises';
+import { inspect } from 'node:util';
 
 import { Runner } from '../mongoBench/index.mjs';
 import {
