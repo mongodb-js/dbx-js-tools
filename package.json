@@ -27,7 +27,7 @@
     "typescript-cached-transpile": "^0.0.6"
   },
   "scripts": {
-    "check:eslint": "eslint -v && eslint --max-warnings=0 --ext '.js,.ts' packages/**/src packages/**/test",
+    "check:eslint": "eslint -v && eslint --max-warnings=0 --ext '.js,.ts,.mts' packages/**/src packages/**/test",
     "fix:eslint": "npm run check:eslint -- --fix"
   }
 }
