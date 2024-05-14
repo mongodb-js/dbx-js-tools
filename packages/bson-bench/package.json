@@ -2,7 +2,12 @@
   "name": "bson-bench",
   "version": "0.0.1",
   "description": "benchmarking tool for bson",
-  "private": true,
+  "files": [
+    "lib",
+    "src",
+    "etc/prepare.js",
+    "tsconfig.json"
+  ],
   "main": "./lib/index.js",
   "scripts": {
     "build": "npx tsc -p ./tsconfig.json",
@@ -18,9 +23,5 @@
   "license": "Apache-2.0",
   "dependencies": {
     "bson": "4.7"
-  },
-  "directories": {
-    "lib": "lib",
-    "test": "test"
   }
 }
