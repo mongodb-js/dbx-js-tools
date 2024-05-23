@@ -3,7 +3,7 @@
   "private": true,
   "workspaces": [
     "packages/bson-bench",
-    "packages/eslint-config"
+    "packages/driver-bench"
   ],
   "devDependencies": {
     "@tsconfig/node16": "^16.1.3",
@@ -27,7 +27,7 @@
     "typescript-cached-transpile": "^0.0.6"
   },
   "scripts": {
-    "check:eslint": "eslint -v && eslint --max-warnings=0 --ext '.js,.ts' packages/**/src packages/**/test",
+    "check:eslint": "eslint -v && eslint --max-warnings=0 --ext '.js,.ts,.mts' packages/**/src packages/**/test",
     "fix:eslint": "npm run check:eslint -- --fix"
   }
 }
