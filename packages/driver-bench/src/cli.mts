@@ -9,13 +9,19 @@ import { main } from './driverBench/index.mjs';
 const argv = util.parseArgs({
   args: process.argv.slice(2),
   options: {
-    grep: { type: 'string', short: 'g', default: '' }
+    grep: { type: 'string', short: 'g', default: '' },
+    help: { type: 'boolean', short: 'h', default: false }
   },
   strict: true,
   allowPositionals: true
 });
 
 const [driverPath] = argv.positionals;
+
+if (argv.values.help || driverPath == null || driverPath.length === 0) {
+  console.error('node cli.mjs DRIVER_PATH [--grep/-g BENCHMARK_NAME]');
+  process.exit(0);
+}
 
 const hw = os.cpus();
 const ram = os.totalmem() / 1024 ** 3;
