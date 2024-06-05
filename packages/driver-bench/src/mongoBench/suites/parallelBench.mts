@@ -14,10 +14,10 @@ import {
   dropBucket,
   dropCollection,
   dropDb,
-  initBucket,
   initCollection,
   initDb,
-  makeClient
+  makeInitBucket,
+  makeMakeClient
 } from '../../driverBench/common.mjs';
 import type { Suite } from '../suite.mjs';
 
@@ -117,13 +117,13 @@ async function gridfsMultiFileDownload() {
   await Promise.all(downloads);
 }
 
-export function makeParallelBenchmarks(suite: Suite): Suite {
+export function makeParallelBenchmarks(suite: Suite, mongodbDriver): Suite {
   return suite
     .benchmark('ldjsonMultiFileUpload', benchmark =>
       // https://github.com/mongodb/specifications/blob/master/source/benchmarking/benchmarking.rst#ldjson-multi-file-import
       benchmark
         .taskSize(565)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -138,7 +138,7 @@ export function makeParallelBenchmarks(suite: Suite): Suite {
       // https://github.com/mongodb/specifications/blob/master/source/benchmarking/benchmarking.rst#ldjson-multi-file-export
       benchmark
         .taskSize(565)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -159,14 +159,14 @@ export function makeParallelBenchmarks(suite: Suite): Suite {
       // https://github.com/mongodb/specifications/blob/master/source/benchmarking/benchmarking.rst#gridfs-multi-file-upload
       benchmark
         .taskSize(262.144)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
         .setup(initDb)
         .setup(initCollection)
         .beforeTask(dropBucket)
-        .beforeTask(initBucket)
+        .beforeTask(makeInitBucket(mongodbDriver))
         .beforeTask(async function () {
           const stream = this.bucket.openUploadStream('setup-file.txt');
           const oneByteFile = Readable.from('a');
@@ -180,7 +180,7 @@ export function makeParallelBenchmarks(suite: Suite): Suite {
       // https://github.com/mongodb/specifications/blob/master/source/benchmarking/benchmarking.rst#gridfs-multi-file-download
       benchmark
         .taskSize(262.144)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -188,10 +188,10 @@ export function makeParallelBenchmarks(suite: Suite): Suite {
         .setup(initCollection)
         .setup(initTemporaryDirectory)
         .setup(dropBucket)
-        .setup(initBucket)
+        .setup(makeInitBucket(mongodbDriver))
         .setup(gridfsMultiFileUpload)
         .beforeTask(clearTemporaryDirectory)
-        .setup(initBucket)
+        .setup(makeInitBucket(mongodbDriver))
         .task(gridfsMultiFileDownload)
         .teardown(dropDb)
         .teardown(async function () {

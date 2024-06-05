@@ -53,6 +53,8 @@ export type RunnerOptions = {
   maxExecutionTime?: number;
   minExecutionCount?: number;
   reporter?: (message?: any, ...optionalParams: any[]) => void;
+  /** Only run TEST NAMES that match */
+  grep?: string;
 };
 
 export class Runner {
@@ -61,13 +63,14 @@ export class Runner {
   private minExecutionCount: number;
   private reporter: (message?: any, ...optionalParams: any[]) => void;
   private children: Record<string, Suite>;
+  private grep: RegExp | null;
 
-  constructor(options?: RunnerOptions) {
-    options = options || {};
+  constructor(options: RunnerOptions = {}) {
     this.minExecutionTime = options.minExecutionTime || CONSTANTS.DEFAULT_MIN_EXECUTION_TIME;
     this.maxExecutionTime = options.maxExecutionTime || CONSTANTS.DEFAULT_MAX_EXECUTION_TIME;
     this.minExecutionCount = options.minExecutionCount || CONSTANTS.DEFAULT_MIN_EXECUTION_COUNT;
     this.reporter = options.reporter ?? console.log.bind(console);
+    this.grep = options.grep ? new RegExp(options.grep, 'i') : null;
     this.children = {};
   }
 
@@ -121,6 +124,11 @@ export class Runner {
     const result: Record<string, number> = {};
 
     for (const [name, benchmark] of benchmarks) {
+      if (this.grep && !this.grep.test(name)) {
+        this.reporter(`    Skipping Benchmark "${name}"`);
+        result[name] = 0;
+        continue;
+      }
       this.reporter(`    Executing Benchmark "${name}"`);
       result[name] = await this._runBenchmark(benchmark);
       this.reporter(`    Result ${result[name].toFixed(4)} MB/s`);

@@ -8,14 +8,14 @@ import {
   dropBucket,
   dropCollection,
   dropDb,
-  initBucket,
   initCollection,
   initDb,
   loadSpecFile,
-  makeClient,
+  makeInitBucket,
   makeLoadInsertDocs,
   makeLoadJSON,
   makeLoadTweets,
+  makeMakeClient,
   writeSingleByteFileToBucket
 } from '../../driverBench/common.mjs';
 import type { Suite } from '../suite.mjs';
@@ -34,19 +34,19 @@ async function gridFsUpload() {
   await pipeline(uploadData, uploadStream);
 }
 
-export function makeMultiBench(suite: Suite): Suite {
+export function makeMultiBench(suite: Suite, mongodbDriver): Suite {
   return suite
     .benchmark('findManyAndEmptyCursor', benchmark =>
       benchmark
         .taskSize(16.22)
         .setup(makeLoadJSON('tweet.json'))
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
         .setup(initCollection)
         .setup(makeLoadTweets(false))
-        .task(async function () {
+        .task(async function findManyAndEmptyCursor() {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           for await (const _ of this.collection.find({})) {
             // do nothing
@@ -60,7 +60,7 @@ export function makeMultiBench(suite: Suite): Suite {
         .taskSize(2.75)
         .setup(makeLoadJSON('small_doc.json'))
         .setup(makeLoadInsertDocs(10000))
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -70,7 +70,7 @@ export function makeMultiBench(suite: Suite): Suite {
         .beforeTask(dropCollection)
         .beforeTask(createCollection)
         .beforeTask(initCollection)
-        .task(async function () {
+        .task(async function smallDocBulkInsert() {
           await this.collection.insertMany(this.docs, { ordered: true });
         })
         .teardown(dropDb)
@@ -81,7 +81,7 @@ export function makeMultiBench(suite: Suite): Suite {
         .taskSize(27.31)
         .setup(makeLoadJSON('large_doc.json'))
         .setup(makeLoadInsertDocs(10))
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -91,7 +91,7 @@ export function makeMultiBench(suite: Suite): Suite {
         .beforeTask(dropCollection)
         .beforeTask(createCollection)
         .beforeTask(initCollection)
-        .task(async function () {
+        .task(async function largeDocBulkInsert() {
           await this.collection.insertMany(this.docs, { ordered: true });
         })
         .teardown(dropDb)
@@ -101,14 +101,14 @@ export function makeMultiBench(suite: Suite): Suite {
       benchmark
         .taskSize(52.43)
         .setup(loadGridFs)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
         .setup(initDb)
         .setup(initCollection)
         .beforeTask(dropBucket)
-        .beforeTask(initBucket)
+        .beforeTask(makeInitBucket(mongodbDriver))
         .beforeTask(gridFsInitUploadStream)
         .beforeTask(writeSingleByteFileToBucket)
         .task(gridFsUpload)
@@ -119,21 +119,21 @@ export function makeMultiBench(suite: Suite): Suite {
       benchmark
         .taskSize(52.43)
         .setup(loadGridFs)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
         .setup(initDb)
         .setup(initCollection)
         .setup(dropBucket)
-        .setup(initBucket)
+        .setup(makeInitBucket(mongodbDriver))
         .setup(gridFsInitUploadStream)
         .setup(async function () {
           await gridFsUpload.call(this);
           this.id = this.uploadStream.id;
           this.uploadData = undefined;
         })
-        .task(async function () {
+        .task(async function gridFsDownload() {
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           for await (const _ of this.bucket.openDownloadStream(this.id)) {
             // do nothing
