@@ -17,8 +17,6 @@ const argv = util.parseArgs({
 
 const [driverPath] = argv.positionals;
 
-console.log(`Benching driver at: ${driverPath}`);
-
 const hw = os.cpus();
 const ram = os.totalmem() / 1024 ** 3;
 const platform = { name: hw[0].model, cores: hw.length, ram: `${ram}GB` };
@@ -31,8 +29,20 @@ const systemInfo = () =>
     `- os: ${process.platform} (${os.release()})`,
     `- ram: ${platform.ram}\n`
   ].join('\n');
-console.log(systemInfo());
 
 const mongodbDriver = await import(driverPath);
 
-await main(argv, mongodbDriver);
+let { MONGODB_URI = '' } = process.env;
+MONGODB_URI = MONGODB_URI.length === 0 ? 'mongodb://127.0.0.1:27017' : MONGODB_URI;
+
+const client = new mongodbDriver.MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 2000 });
+try {
+  await client.db().command({ ping: 1 });
+  await client.close();
+  console.log(`Benching driver at: ${driverPath}`);
+  console.log(systemInfo());
+  await main(argv, mongodbDriver);
+} catch (error) {
+  await client.close();
+  console.log('Unable to benchmark against:\n', MONGODB_URI, '\n', error);
+}
