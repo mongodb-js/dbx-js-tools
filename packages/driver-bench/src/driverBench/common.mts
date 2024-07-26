@@ -4,10 +4,8 @@ import process from 'node:process';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
-const { MONGODB_DRIVER_PATH = '' } = process.env;
-const { MongoClient, GridFSBucket } = await import(
-  MONGODB_DRIVER_PATH.length !== 0 ? MONGODB_DRIVER_PATH : 'mongodb'
-);
+let { MONGODB_URI = '' } = process.env;
+MONGODB_URI = MONGODB_URI.length === 0 ? 'mongodb://127.0.0.1:27017' : MONGODB_URI;
 
 const DB_NAME = 'perftest';
 const COLLECTION_NAME = 'corpus';
@@ -26,10 +24,10 @@ export function loadSpecString(filePath) {
   return loadSpecFile(filePath, 'utf8');
 }
 
-export function makeClient() {
-  this.client = new MongoClient(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017', {
-    serverSelectionTimeoutMS: 2000
-  });
+export function makeMakeClient({ MongoClient }) {
+  return function () {
+    this.client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 2000 });
+  };
 }
 
 export function connectClient() {
@@ -64,8 +62,10 @@ export function dropCollection() {
   });
 }
 
-export function initBucket() {
-  this.bucket = new GridFSBucket(this.db);
+export function makeInitBucket({ GridFSBucket }) {
+  return function () {
+    this.bucket = new GridFSBucket(this.db);
+  };
 }
 
 export function dropBucket() {

@@ -6,18 +6,18 @@ import {
   dropDb,
   initCollection,
   initDb,
-  makeClient,
   makeLoadJSON,
-  makeLoadTweets
+  makeLoadTweets,
+  makeMakeClient
 } from '../../driverBench/common.mjs';
 import type { Suite } from '../suite.mjs';
 
-export function makeSingleBench(suite: Suite): Suite {
+export function makeSingleBench(suite: Suite, mongodbDriver): Suite {
   return suite
     .benchmark('runCommand', benchmark =>
       benchmark
         .taskSize(0.16)
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .task(async function () {
@@ -31,7 +31,7 @@ export function makeSingleBench(suite: Suite): Suite {
       benchmark
         .taskSize(16.22)
         .setup(makeLoadJSON('tweet.json'))
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -49,7 +49,7 @@ export function makeSingleBench(suite: Suite): Suite {
       benchmark
         .taskSize(2.75)
         .setup(makeLoadJSON('small_doc.json'))
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
@@ -74,7 +74,7 @@ export function makeSingleBench(suite: Suite): Suite {
       benchmark
         .taskSize(27.31)
         .setup(makeLoadJSON('large_doc.json'))
-        .setup(makeClient)
+        .setup(makeMakeClient(mongodbDriver))
         .setup(connectClient)
         .setup(initDb)
         .setup(dropDb)
