@@ -43,8 +43,7 @@ MONGODB_URI = MONGODB_URI.length === 0 ? 'mongodb://127.0.0.1:27017' : MONGODB_U
 
 const client = new mongodbDriver.MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 2000 });
 try {
-  console.log('server version', (await client.db('admin').command({ buildInfo: 1 })).version);
-  // console.log(await client.db('admin').command({ getParameter: '*' }));
+  console.log('server version:', (await client.db('admin').command({ buildInfo: 1 })).version);
   await client.close();
   console.log(`Benching driver at: ${driverPath}`);
   console.log(systemInfo());
