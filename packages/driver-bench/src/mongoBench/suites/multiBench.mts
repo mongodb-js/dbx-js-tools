@@ -141,5 +141,21 @@ export function makeMultiBench(suite: Suite, mongodbDriver): Suite {
         })
         .teardown(dropDb)
         .teardown(disconnectClient)
+    )
+    .benchmark('findManyAndToArray', benchmark =>
+      benchmark
+        .taskSize(16.22)
+        .setup(makeLoadJSON('tweet.json'))
+        .setup(makeMakeClient(mongodbDriver))
+        .setup(connectClient)
+        .setup(initDb)
+        .setup(dropDb)
+        .setup(initCollection)
+        .setup(makeLoadTweets(false))
+        .task(async function () {
+          await this.collection.find({}).toArray();
+        })
+        .teardown(dropDb)
+        .teardown(disconnectClient)
     );
 }
