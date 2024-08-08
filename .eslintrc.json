@@ -6,7 +6,6 @@
   },
   "plugins": [
     "simple-import-sort",
-    "import",
     "@typescript-eslint",
     "prettier",
     "unused-imports",
@@ -77,11 +76,10 @@
         "null": "ignore"
       }
     ],
+    "@typescript-eslint/no-unused-expressions": "off",
+    "@typescript-eslint/no-require-imports": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "import/first": "error",
-    "import/newline-after-import": "error",
-    "import/no-duplicates": "error",
     "strict": [
       "error",
       "global"
