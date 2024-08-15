@@ -84,6 +84,7 @@
       "error",
       "global"
     ],
+    "no-duplicate-imports": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/consistent-type-imports": [

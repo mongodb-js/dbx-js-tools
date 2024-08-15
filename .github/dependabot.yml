@@ -20,6 +20,9 @@ updates:
         versions: [">=16.0.0"]
       # we ignore TS as a part of quarterly dependency updates.
       - dependency-name: "typescript"
+    versioning-strategy: increase
+    allow:
+      - dependency-type: "development"
       
     groups:
       development-dependencies:
