@@ -56,7 +56,7 @@ export class Package {
   check<B extends BSONLib>(): B | undefined {
     try {
       return require(this.computedModuleName);
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }

@@ -56,7 +56,6 @@ const testListShift = () => {
 };
 
 const testDenqueShift = () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Denque = require('denque');
   let bigDenque = new Denque(makeBigArray());
   const h = createHistogram();
@@ -97,7 +96,6 @@ const testListPush = () => {
 };
 
 const testDenquePush = () => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const Denque = require('denque');
   let bigDenque = new Denque([]);
   const h = createHistogram();
