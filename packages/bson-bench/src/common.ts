@@ -68,6 +68,7 @@ export class Package {
    * module
    **/
   async install(): Promise<void> {
+    console.error('installing');
     let source: string;
     switch (this.type) {
       case 'npm':
@@ -90,11 +91,15 @@ export class Package {
         break;
     }
 
+    console.error(source);
+
     const npmInstallProcess = cp.exec(
       `npm install ${this.computedModuleName}@${source} --no-save`,
       { encoding: 'utf8', cwd: __dirname }
     );
 
+    npmInstallProcess.stderr?.pipe(process.stderr);
+    npmInstallProcess.stdout?.pipe(process.stdout);
     const exitCode: number = (await once(npmInstallProcess, 'exit'))[0];
     if (exitCode !== 0) {
       throw new Error(`unable to install module: ${this.computedModuleName}@${source}`);

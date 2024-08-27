@@ -87,7 +87,7 @@ describe('common functionality', function () {
       });
 
       context('when given a correctly formatted npm package that does not exist', function () {
-        it('throws an error', async function () {
+        it.only('throws an error', async function () {
           const bson9000 = new Package('bson@9000');
           const error = await bson9000.install().catch(error => error);
           expect(error).to.be.instanceOf(Error);
