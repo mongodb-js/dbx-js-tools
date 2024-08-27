@@ -107,7 +107,7 @@ describe.only('common functionality', function () {
         function () {
           it('throws an error', async function () {
             const bson6Git = new Package('bson#58c002d87bca9bbe7c7001cc6acae54e90a951bcf');
-            const maybeError = await bson6Git.install().catch(error => error);
+            const maybeError = await bson6Git.install(true).catch(error => error);
             expect(maybeError).to.be.instanceOf(Error);
           });
         }
@@ -118,7 +118,7 @@ describe.only('common functionality', function () {
         function () {
           it('installs successfully', async function () {
             const bson6Git = new Package('bson#v6.0.0');
-            const maybeError = await bson6Git.install(true).catch(error => error);
+            const maybeError = await bson6Git.install().catch(error => error);
             expect(maybeError).to.be.undefined;
           });
         }
