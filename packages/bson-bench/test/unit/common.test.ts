@@ -113,12 +113,12 @@ describe.only('common functionality', function () {
         }
       );
 
-      context.only(
+      context(
         'when given a correctly formatted git package using git tag that exists',
         function () {
           it('installs successfully', async function () {
             const bson6Git = new Package('bson#v6.0.0');
-            const maybeError = await bson6Git.install().catch(error => error);
+            const maybeError = await bson6Git.install(true).catch(error => error);
             expect(maybeError).to.be.undefined;
           });
         }

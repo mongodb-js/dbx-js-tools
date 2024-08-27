@@ -67,7 +67,7 @@ export class Package {
    * Note that this function should not be run in the same Node process that imports the installed
    * module
    **/
-  async install(): Promise<void> {
+  async install(inheritOutput = false): Promise<void> {
     console.error('installing');
     let source: string;
     switch (this.type) {
@@ -98,9 +98,12 @@ export class Package {
       { encoding: 'utf8', cwd: __dirname }
     );
 
-    npmInstallProcess.stderr?.pipe(process.stderr);
-    npmInstallProcess.stdout?.pipe(process.stdout);
+    inheritOutput && npmInstallProcess.stderr?.pipe(process.stderr);
+    inheritOutput && npmInstallProcess.stdout?.pipe(process.stdout);
+    inheritOutput && npmInstallProcess.on('error', (e) => console.error({e }));
     const exitCode: number = (await once(npmInstallProcess, 'exit'))[0];
+    inheritOutput && console.error({ exitCode });
+
     if (exitCode !== 0) {
       throw new Error(`unable to install module: ${this.computedModuleName}@${source}`);
     }
