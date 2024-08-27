@@ -91,7 +91,8 @@ export class Package {
         break;
     }
 
-    console.error(source);
+    const result = cp.execSync(`npm --version`, { encoding: 'utf8'});
+    console.error({ result });
 
     const npmInstallProcess = cp.exec(
       `npm install ${this.computedModuleName}@${source} --no-save`,
