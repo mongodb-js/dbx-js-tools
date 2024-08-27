@@ -4,7 +4,7 @@ import { sep } from 'path';
 import { Package } from '../../lib/common';
 import { clearTestedDeps } from '../utils';
 
-describe('common functionality', function () {
+describe.only('common functionality', function () {
   const BSON_PATH = process.env.BSON_PATH;
 
   context('Package', function () {
@@ -87,7 +87,7 @@ describe('common functionality', function () {
       });
 
       context('when given a correctly formatted npm package that does not exist', function () {
-        it.only('throws an error', async function () {
+        it('throws an error', async function () {
           const bson9000 = new Package('bson@9000');
           const error = await bson9000.install().catch(error => error);
           expect(error).to.be.instanceOf(Error);
