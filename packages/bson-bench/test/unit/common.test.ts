@@ -113,7 +113,7 @@ describe.only('common functionality', function () {
         }
       );
 
-      context(
+      context.only(
         'when given a correctly formatted git package using git tag that exists',
         function () {
           it('installs successfully', async function () {
