@@ -12,20 +12,34 @@ import {
   type RunBenchmarkMessage
 } from './common';
 
-function reportResultAndQuit(result: BenchmarkResult) {
-  if (process.send) process?.send({ type: 'returnResult', result });
+function exit(code: number) {
   process.disconnect();
-  process.exit(0);
+  process.exit(code);
+}
+
+function reportResultAndQuit(result: BenchmarkResult) {
+  if (process.send) {
+    process?.send({ type: 'returnResult', result }, null, {}, () => exit(0));
+    return;
+  }
+  exit(0);
 }
 
 function reportErrorAndQuit(error: Error) {
-  if (process.send)
-    process.send({
-      type: 'returnError',
-      error
-    });
-  process.disconnect();
-  process.exit(1);
+  if (process.send) {
+    process?.send(
+      {
+        type: 'returnError',
+        error
+      },
+      null,
+      {},
+      () => exit(0)
+    );
+    return;
+  }
+
+  exit(1);
 }
 
 function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) {
