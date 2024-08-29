@@ -19,7 +19,7 @@ function exit(code: number) {
 
 function reportResultAndQuit(result: BenchmarkResult) {
   if (process.send) {
-    process?.send({ type: 'returnResult', result }, null, {}, () => exit(0));
+    process.send({ type: 'returnResult', result }, null, {}, () => exit(0));
     return;
   }
   exit(0);
@@ -27,7 +27,7 @@ function reportResultAndQuit(result: BenchmarkResult) {
 
 function reportErrorAndQuit(error: Error) {
   if (process.send) {
-    process?.send(
+    process.send(
       {
         type: 'returnError',
         error
