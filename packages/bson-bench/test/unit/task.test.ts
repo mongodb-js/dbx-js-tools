@@ -42,6 +42,12 @@ describe('Task', function () {
   context('#run()', function () {
     for (const test of testTable) {
       context(`${test.operation} with library specifier: ${test.library}`, function () {
+        let task;
+
+        beforeEach(function () {
+          task = new Task(test);
+        });
+
         it('completes successfully', async function () {
           if (
             Number(process.versions.node.split('.')[0]) >= 20 &&
@@ -50,13 +56,17 @@ describe('Task', function () {
             console.log('Skipping installing bson-ext via git tag on Node 20');
             this.skip();
           }
-          const task = new Task(test);
 
           await task.run();
           for (const child of task.children) {
             expect(child.exitCode).to.not.be.null;
             expect(child.exitCode).to.equal(0);
           }
+        });
+
+        it('strips the tag or commit from the test name', function () {
+          expect(task.testName).to.not.include(test.library);
+          expect(task.testName).to.match(/bson|bson-ext/);
         });
       });
     }
@@ -138,7 +148,7 @@ describe('Task', function () {
     });
 
     it('returns results as an object', async function () {
-      expect(results.info).to.haveOwnProperty('test_name', task.taskName);
+      expect(results.info).to.haveOwnProperty('test_name', task.testName);
       expect(results.info).to.haveOwnProperty('args');
     });
 
@@ -240,12 +250,12 @@ describe('Task', function () {
         options: { promoteLongs: true }
       });
 
-      expectedFileName = `${task.taskName}.json`;
+      expectedFileName = `${task.testName}.json`;
       if (await exists(expectedFileName)) await rm(expectedFileName);
     });
 
     after(async () => {
-      expectedFileName = `${task.taskName}.json`;
+      expectedFileName = `${task.testName}.json`;
       if (await exists(expectedFileName)) await rm(expectedFileName);
     });
 

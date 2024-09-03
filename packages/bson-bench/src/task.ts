@@ -19,6 +19,7 @@ export class Task {
   result: BenchmarkResult | undefined;
   benchmark: BenchmarkSpecification;
   taskName: string;
+  testName: string;
   /** @internal */
   children: ChildProcess[];
   /** @internal */
@@ -33,6 +34,8 @@ export class Task {
     this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${
       this.benchmark.operation
     }_${this.benchmark.library}`;
+
+    this.testName = this.taskName.substring(0, this.taskName.search(/#|@/));
   }
 
   /**
@@ -111,7 +114,7 @@ export class Task {
 
     const perfSendResults: PerfSendResult = {
       info: {
-        test_name: this.taskName,
+        test_name: this.testName,
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,
