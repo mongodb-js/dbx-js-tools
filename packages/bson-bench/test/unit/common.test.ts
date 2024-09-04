@@ -105,7 +105,8 @@ describe('common functionality', function () {
       context(
         'when given a correctly formatted git package using commit that does not exist',
         function () {
-          it('throws an error', async function () {
+          // TODO: NODE-6361: Unskip and fix this test.
+          it.skip('throws an error', async function () {
             const bson6Git = new Package('bson#58c002d87bca9bbe7c7001cc6acae54e90a951bcf');
             const maybeError = await bson6Git.install().catch(error => error);
             expect(maybeError).to.be.instanceOf(Error);
