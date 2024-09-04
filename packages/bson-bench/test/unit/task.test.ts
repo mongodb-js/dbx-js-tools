@@ -1,10 +1,13 @@
 import { expect } from 'chai';
 import { rm } from 'fs/promises';
+import * as path from 'path';
 
 import { Task } from '../../lib/task';
 import { type BenchmarkSpecification, type PerfSendResult } from '../../src/common';
 import { exists } from '../../src/utils';
 import { clearTestedDeps } from '../utils';
+
+const LOCAL_BSON = path.join(__dirname, '..', '..', 'node_modules', 'bson');
 
 describe('Task', function () {
   beforeEach(clearTestedDeps);
@@ -18,6 +21,7 @@ describe('Task', function () {
     'bson@1.1.6',
     'bson@5.0.0',
     'bson#v6.1.0',
+    `bson:${LOCAL_BSON}`,
     'bson-ext@4.0.0',
     'bson-ext#c1284d1'
   ];

@@ -35,7 +35,7 @@ export class Task {
       this.benchmark.operation
     }_${this.benchmark.library}`;
 
-    this.testName = this.taskName.substring(0, this.taskName.search(/#|@/));
+    this.testName = this.taskName.substring(0, this.taskName.search(/#|@|:/));
   }
 
   /**
