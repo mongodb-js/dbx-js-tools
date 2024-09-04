@@ -4,7 +4,7 @@ import { sep } from 'path';
 import { Package } from '../../lib/common';
 import { clearTestedDeps } from '../utils';
 
-describe('common functionality', function () {
+describe.only('common functionality', function () {
   const BSON_PATH = process.env.BSON_PATH;
 
   context('Package', function () {
@@ -107,7 +107,7 @@ describe('common functionality', function () {
         function () {
           it('throws an error', async function () {
             const bson6Git = new Package('bson#58c002d87bca9bbe7c7001cc6acae54e90a951bcf');
-            const maybeError = await bson6Git.install().catch(error => error);
+            const maybeError = await bson6Git.install(true).catch(error => error);
             expect(maybeError).to.be.instanceOf(Error);
           });
         }
