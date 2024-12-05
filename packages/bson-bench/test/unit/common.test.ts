@@ -1,5 +1,7 @@
 import { expect } from 'chai';
-import { sep } from 'path';
+import { mkdir, rm } from 'fs/promises';
+import { tmpdir } from 'os';
+import { join, sep } from 'path';
 
 import { Package } from '../../lib/common';
 import { clearTestedDeps } from '../utils';
@@ -8,20 +10,32 @@ describe('common functionality', function () {
   const BSON_PATH = process.env.BSON_PATH;
 
   context('Package', function () {
-    beforeEach(clearTestedDeps);
-    after(clearTestedDeps);
+    let installDir: string;
+
+    after(async function () {
+      await rm(installDir, { recursive: true, force: true });
+    });
+
+    beforeEach(async function () {
+      await clearTestedDeps(installDir);
+    });
+
+    before(async function () {
+      installDir = join(tmpdir(), 'bsonBenchTest');
+      await mkdir(installDir);
+    });
 
     context('constructor()', function () {
       context('when given a correctly formatted npm package', function () {
         it('sets computedModuleName correctly', function () {
-          const pack = new Package('bson@6.0.0');
+          const pack = new Package('bson@6.0.0', installDir);
           expect(pack).to.haveOwnProperty('computedModuleName', 'bson-6.0.0');
         });
       });
 
       context('when given a correctly formatted git repository', function () {
         it('sets computedModuleName correctly', function () {
-          const pack = new Package('bson#eb98b8c39d6d5ba4ce7231ab9e0f29495d74b994');
+          const pack = new Package('bson#eb98b8c39d6d5ba4ce7231ab9e0f29495d74b994', installDir);
           expect(pack).to.haveOwnProperty(
             'computedModuleName',
             'bson-git-eb98b8c39d6d5ba4ce7231ab9e0f29495d74b994'
@@ -31,13 +45,16 @@ describe('common functionality', function () {
 
       context('when trying to install an npm package apart from bson or bson-ext', function () {
         it('throws an error', function () {
-          expect(() => new Package('notBson@1.0.0')).to.throw(Error, /unknown package specifier/);
+          expect(() => new Package('notBson@1.0.0', installDir)).to.throw(
+            Error,
+            /unknown package specifier/
+          );
         });
       });
 
       context('when trying to install a git package apart from bson or bson-ext', function () {
         it('throws an error', function () {
-          expect(() => new Package('notBson#abcdabcdabcd')).to.throw(
+          expect(() => new Package('notBson#abcdabcdabcd', installDir)).to.throw(
             Error,
             /unknown package specifier/
           );
@@ -50,7 +67,7 @@ describe('common functionality', function () {
             console.log('Skipping since BSON_PATH is undefined');
             this.skip();
           }
-          const pack = new Package(`bson:${BSON_PATH}`);
+          const pack = new Package(`bson:${BSON_PATH}`, installDir);
           expect(pack).to.haveOwnProperty(
             'computedModuleName',
             `bson-local-${BSON_PATH.replaceAll(sep, '_')}`
@@ -62,14 +79,14 @@ describe('common functionality', function () {
     context('#check()', function () {
       context('when package is not installed', function () {
         it('returns undefined', function () {
-          const pack = new Package('bson@6');
+          const pack = new Package('bson@6', installDir);
           expect(pack.check()).to.be.undefined;
         });
       });
 
       context('when package is installed', function () {
         it('returns the module', async function () {
-          const pack = new Package('bson@6.0.0');
+          const pack = new Package('bson@6.0.0', installDir);
           await pack.install();
           expect(pack.check()).to.not.be.undefined;
         });
@@ -80,7 +97,7 @@ describe('common functionality', function () {
       context('when given a correctly formatted npm package that exists', function () {
         for (const lib of ['bson@6.0.0', 'bson-ext@4.0.0', 'bson@latest', 'bson-ext@latest']) {
           it(`installs ${lib} successfully`, async function () {
-            const pack = new Package(lib);
+            const pack = new Package(lib, installDir);
             await pack.install();
           });
         }
@@ -88,7 +105,7 @@ describe('common functionality', function () {
 
       context('when given a correctly formatted npm package that does not exist', function () {
         it('throws an error', async function () {
-          const bson9000 = new Package('bson@9000');
+          const bson9000 = new Package('bson@9000', installDir);
           const error = await bson9000.install().catch(error => error);
           expect(error).to.be.instanceOf(Error);
         });
@@ -96,7 +113,7 @@ describe('common functionality', function () {
 
       context('when given a correctly formatted git package using commit that exists', function () {
         it('installs successfully', async function () {
-          const bson6Git = new Package('bson#58c002d');
+          const bson6Git = new Package('bson#58c002d', installDir);
           const maybeError = await bson6Git.install().catch(error => error);
           expect(maybeError).to.be.undefined;
         });
@@ -107,7 +124,10 @@ describe('common functionality', function () {
         function () {
           // TODO: NODE-6361: Unskip and fix this test.
           it.skip('throws an error', async function () {
-            const bson6Git = new Package('bson#58c002d87bca9bbe7c7001cc6acae54e90a951bcf');
+            const bson6Git = new Package(
+              'bson#58c002d87bca9bbe7c7001cc6acae54e90a951bcf',
+              installDir
+            );
             const maybeError = await bson6Git.install().catch(error => error);
             expect(maybeError).to.be.instanceOf(Error);
           });
@@ -118,7 +138,7 @@ describe('common functionality', function () {
         'when given a correctly formatted git package using git tag that exists',
         function () {
           it('installs successfully', async function () {
-            const bson6Git = new Package('bson#v6.0.0');
+            const bson6Git = new Package('bson#v6.0.0', installDir);
             const maybeError = await bson6Git.install().catch(error => error);
             expect(maybeError).to.be.undefined;
           });
@@ -129,7 +149,7 @@ describe('common functionality', function () {
         'when given a correctly formatted git package using git tag that does not exist',
         function () {
           it('throws an error', async function () {
-            const bson6Git = new Package('bson#v999.999.9');
+            const bson6Git = new Package('bson#v999.999.9', installDir);
             const maybeError = await bson6Git.install().catch(error => error);
             expect(maybeError).to.be.instanceOf(Error);
           });
@@ -143,7 +163,7 @@ describe('common functionality', function () {
             this.skip();
           }
 
-          const bsonLocal = new Package(`bson:${BSON_PATH}`);
+          const bsonLocal = new Package(`bson:${BSON_PATH}`, installDir);
           const maybeError = await bsonLocal.install().catch(error => error);
           expect(maybeError).to.not.be.instanceOf(Error, maybeError.message);
         });
@@ -152,7 +172,8 @@ describe('common functionality', function () {
       context('when given a path that does not exist', function () {
         it('throws an error', async function () {
           const bsonLocal = new Package(
-            `bson:/highly/unlikely/path/to/exist/that/should/point/to/bson`
+            `bson:/highly/unlikely/path/to/exist/that/should/point/to/bson`,
+            installDir
           );
           const maybeError = await bsonLocal.install().catch(error => error);
           expect(maybeError).to.be.instanceOf(Error);

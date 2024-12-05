@@ -10,8 +10,13 @@ import { clearTestedDeps } from '../utils';
 const LOCAL_BSON = path.join(__dirname, '..', '..', 'node_modules', 'bson');
 
 describe('Task', function () {
-  beforeEach(clearTestedDeps);
-  after(clearTestedDeps);
+  beforeEach(async function () {
+    await clearTestedDeps(Task.packageInstallLocation);
+  });
+
+  after(async function () {
+    await clearTestedDeps(Task.packageInstallLocation);
+  });
 
   const BSON_PATH = process.env.BSON_PATH;
   const BSON_EXT_PATH = process.env.BSON_EXT_PATH;

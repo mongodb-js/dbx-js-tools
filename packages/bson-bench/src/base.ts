@@ -1,5 +1,6 @@
 import * as BSON from 'bson';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 import { performance } from 'perf_hooks';
 import * as process from 'process';
 
@@ -116,10 +117,12 @@ function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) 
 
 function listener(message: RunBenchmarkMessage) {
   if (message.type === 'runBenchmark') {
-    const packageSpec = new Package(message.benchmark.library);
+    const packageSpec = new Package(message.benchmark.library, message.benchmark.installLocation);
     let bson: BSONLib;
     try {
-      bson = require(packageSpec.computedModuleName);
+      bson = require(
+        join(message.benchmark.installLocation, 'node_modules', packageSpec.computedModuleName)
+      );
     } catch (error) {
       reportErrorAndQuit(error as Error);
       return;
