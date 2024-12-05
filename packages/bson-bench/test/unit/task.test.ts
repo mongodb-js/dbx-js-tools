@@ -115,6 +115,71 @@ describe('Task', function () {
         expect(maybeError).to.be.instanceOf(Error);
         expect(maybeError).to.have.property('message', 'failed to serialize input object');
       });
+
+      it('deletes the temp directory', async function () {
+        const task = new Task({
+          documentPath: 'test/documents/array.json',
+          library: 'bson@5',
+          operation: 'deserialize',
+          warmup: 100,
+          iterations: 100,
+          options: {}
+        });
+
+        // bson throws error when passed array as top-level input
+        const maybeError = await task.run().catch(e => e);
+
+        expect(maybeError).to.be.instanceOf(Error);
+        expect(maybeError).to.have.property('message', 'failed to serialize input object');
+
+        const tmpdirExists = await exists(Task.packageInstallLocation);
+        expect(tmpdirExists).to.be.false;
+      });
+    });
+
+    it('creates a temp directory for packages', async function () {
+      const task = new Task({
+        documentPath: 'test/documents/long_largeArray.json',
+        library: 'bson@5',
+        operation: 'deserialize',
+        warmup: 100,
+        iterations: 10000,
+        options: {}
+      });
+
+      const checkForDirectory = async () => {
+        for (let i = 0; i < 10; i++) {
+          if (await exists(Task.packageInstallLocation)) return true;
+        }
+        return false;
+      };
+      const taskRunPromise = task.run().catch(e => e);
+
+      const result = await Promise.race([checkForDirectory(), taskRunPromise]);
+      expect(typeof result).to.equal('boolean');
+      expect(result).to.be.true;
+
+      const taskRunResult = await taskRunPromise;
+      expect(taskRunResult).to.not.be.instanceOf(Error);
+    });
+
+    context('after completing successfully', function () {
+      it('deletes the temp directory', async function () {
+        const task = new Task({
+          documentPath: 'test/documents/long_largeArray.json',
+          library: 'bson@5',
+          operation: 'deserialize',
+          warmup: 100,
+          iterations: 100,
+          options: {}
+        });
+
+        const maybeError = await task.run().catch(e => e);
+        expect(maybeError).to.not.be.instanceOf(Error);
+
+        const tmpdirExists = await exists(Task.packageInstallLocation);
+        expect(tmpdirExists).to.be.false;
+      });
     });
   });
 
