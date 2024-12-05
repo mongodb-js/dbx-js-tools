@@ -4,7 +4,7 @@ import { tmpdir } from 'os';
 import { join, sep } from 'path';
 
 import { Package } from '../../lib/common';
-import { clearTestedDeps } from '../utils';
+import { clearTestedDeps, exists } from '../utils';
 
 describe('common functionality', function () {
   const BSON_PATH = process.env.BSON_PATH;
@@ -26,6 +26,7 @@ describe('common functionality', function () {
     });
 
     context('constructor()', function () {
+      //github.com/mongodb-js/dbx-js-tools/pull/24/files
       context('when given a correctly formatted npm package', function () {
         it('sets computedModuleName correctly', function () {
           const pack = new Package('bson@6.0.0', installDir);
@@ -96,9 +97,12 @@ describe('common functionality', function () {
     context('#install()', function () {
       context('when given a correctly formatted npm package that exists', function () {
         for (const lib of ['bson@6.0.0', 'bson-ext@4.0.0', 'bson@latest', 'bson-ext@latest']) {
-          it(`installs ${lib} successfully`, async function () {
+          it(`installs ${lib} successfully to the specified install directory`, async function () {
             const pack = new Package(lib, installDir);
             await pack.install();
+
+            expect(await exists(join(installDir, 'node_modules', pack.computedModuleName))).to.be
+              .true;
           });
         }
       });
@@ -112,10 +116,12 @@ describe('common functionality', function () {
       });
 
       context('when given a correctly formatted git package using commit that exists', function () {
-        it('installs successfully', async function () {
+        it('installs successfully to specified install directory', async function () {
           const bson6Git = new Package('bson#58c002d', installDir);
           const maybeError = await bson6Git.install().catch(error => error);
           expect(maybeError).to.be.undefined;
+          expect(await exists(join(installDir, 'node_modules', bson6Git.computedModuleName))).to.be
+            .true;
         });
       });
 
@@ -141,6 +147,8 @@ describe('common functionality', function () {
             const bson6Git = new Package('bson#v6.0.0', installDir);
             const maybeError = await bson6Git.install().catch(error => error);
             expect(maybeError).to.be.undefined;
+            expect(await exists(join(installDir, 'node_modules', bson6Git.computedModuleName))).to
+              .be.true;
           });
         }
       );
@@ -166,6 +174,8 @@ describe('common functionality', function () {
           const bsonLocal = new Package(`bson:${BSON_PATH}`, installDir);
           const maybeError = await bsonLocal.install().catch(error => error);
           expect(maybeError).to.not.be.instanceOf(Error, maybeError.message);
+          expect(await exists(join(installDir, 'node_modules', bsonLocal.computedModuleName))).to.be
+            .true;
         });
       });
 
