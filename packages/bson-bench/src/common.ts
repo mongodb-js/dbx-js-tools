@@ -1,6 +1,6 @@
 import * as cp from 'child_process';
 import { once } from 'events';
-import * as path from 'path';
+import { join } from 'path';
 
 import { exists } from './utils';
 
@@ -26,8 +26,10 @@ export class Package {
   gitCommitish?: string;
   // path to local library
   localPath?: string;
+  installPath: string;
 
-  constructor(libSpec: string) {
+  constructor(libSpec: string, installPath: string) {
+    this.installPath = installPath;
     let match: RegExpExecArray | null;
     if ((match = NPM_PACKAGE_REGEX.exec(libSpec))) {
       this.type = 'npm';
@@ -44,7 +46,8 @@ export class Package {
       this.library = match[1] as 'bson' | 'bson-ext';
 
       this.localPath = match[2];
-      this.computedModuleName = `${this.library}-local-${this.localPath.replaceAll(path.sep, '_')}`;
+      const cleanedLocalPath = this.localPath.replaceAll('/', '_').replaceAll('\\', '_');
+      this.computedModuleName = `${this.library}-local-${cleanedLocalPath}`;
     } else {
       throw new Error('unknown package specifier');
     }
@@ -55,7 +58,7 @@ export class Package {
    */
   check<B extends BSONLib>(): B | undefined {
     try {
-      return require(this.computedModuleName);
+      return require(join(this.installPath, 'node_modules', this.computedModuleName));
     } catch {
       return undefined;
     }
@@ -90,10 +93,10 @@ export class Package {
         break;
     }
 
-    const npmInstallProcess = cp.exec(
-      `npm install ${this.computedModuleName}@${source} --no-save`,
-      { encoding: 'utf8', cwd: __dirname }
-    );
+    const npmInstallProcess = cp.exec(`npm install ${this.computedModuleName}@${source}`, {
+      encoding: 'utf8',
+      cwd: this.installPath
+    });
 
     const exitCode: number = (await once(npmInstallProcess, 'exit'))[0];
     if (exitCode !== 0) {
@@ -130,11 +133,12 @@ export type BenchmarkSpecification = {
   /** Specifier of the bson or bson-ext library to be used. Can be an npm package, git repository or
    * local package */
   library: string;
+  installLocation?: string;
 };
 
 export interface RunBenchmarkMessage {
   type: 'runBenchmark';
-  benchmark: BenchmarkSpecification;
+  benchmark: Omit<BenchmarkSpecification, 'installLocation'> & { installLocation: string };
 }
 
 export interface ResultMessage {
