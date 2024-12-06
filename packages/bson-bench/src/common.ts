@@ -46,8 +46,8 @@ export class Package {
       this.library = match[1] as 'bson' | 'bson-ext';
 
       this.localPath = match[2];
-      this.computedModuleName = `${this.library}-local-${this.localPath.replaceAll('/', '_')}`;
-      this.computedModuleName = `${this.library}-local-${this.localPath.replaceAll('\\', '_')}`;
+      const cleanedLocalPath = this.localPath.replaceAll('/', '_').replaceAll('\\', '_');
+      this.computedModuleName = `${this.library}-local-${cleanedLocalPath}`;
     } else {
       throw new Error('unknown package specifier');
     }
