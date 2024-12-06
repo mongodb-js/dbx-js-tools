@@ -1,6 +1,6 @@
 import * as cp from 'child_process';
 import { once } from 'events';
-import { join, sep } from 'path';
+import { join } from 'path';
 
 import { exists } from './utils';
 
@@ -46,7 +46,8 @@ export class Package {
       this.library = match[1] as 'bson' | 'bson-ext';
 
       this.localPath = match[2];
-      this.computedModuleName = `${this.library}-local-${this.localPath.replaceAll(sep, '_')}`;
+      const cleanedLocalPath = this.localPath.replaceAll('/', '_').replaceAll('\\', '_');
+      this.computedModuleName = `${this.library}-local-${cleanedLocalPath}`;
     } else {
       throw new Error('unknown package specifier');
     }

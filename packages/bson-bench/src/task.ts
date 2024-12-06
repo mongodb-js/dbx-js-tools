@@ -194,10 +194,12 @@ export class Task {
       this.children.push(child);
 
       // listen for results or error
-      const resultOrError: ResultMessage | ErrorMessage = (await once(child, 'message'))[0];
+      const resultOrErrorPromise = once(child, 'message');
+      // Wait for process to exit
+      const exit = once(child, 'exit');
 
-      // wait for child to close
-      await once(child, 'exit');
+      const resultOrError: ResultMessage | ErrorMessage = (await resultOrErrorPromise)[0];
+      await exit;
 
       this.hasRun = true;
       switch (resultOrError.type) {
