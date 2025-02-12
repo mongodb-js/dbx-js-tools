@@ -22,6 +22,7 @@ export class Task {
   benchmark: Omit<BenchmarkSpecification, 'installLocation'> & { installLocation: string };
   taskName: string;
   testName: string;
+  tags?: string[];
   /** @internal */
   children: ChildProcess[];
   /** @internal */
@@ -33,6 +34,7 @@ export class Task {
     this.result = undefined;
     this.children = [];
     this.hasRun = false;
+    this.tags = benchmarkSpec.tags;
     this.benchmark = { ...benchmarkSpec, installLocation: Task.packageInstallLocation };
 
     this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${
@@ -119,6 +121,7 @@ export class Task {
     const perfSendResults: PerfSendResult = {
       info: {
         test_name: this.testName,
+        tags: this.tags,
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,

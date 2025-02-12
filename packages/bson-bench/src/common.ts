@@ -134,6 +134,7 @@ export type BenchmarkSpecification = {
    * local package */
   library: string;
   installLocation?: string;
+  tags?: string[];
 };
 
 export interface RunBenchmarkMessage {

@@ -88,7 +88,8 @@ describe('Suite', function () {
         warmup: 10,
         iterations: 10,
         library: 'bson@5.0.0',
-        options: {}
+        options: {},
+        tags: ['test']
       };
       suite
         .task({

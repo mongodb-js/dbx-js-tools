@@ -42,7 +42,8 @@ describe('Task', function () {
           operation,
           warmup: 100,
           iterations: 100,
-          options: {}
+          options: {},
+          tags: ['test']
         }
       ];
     })
@@ -76,6 +77,10 @@ describe('Task', function () {
         it('strips the tag or commit from the test name', function () {
           expect(task.testName).to.not.include(test.library);
           expect(task.testName).to.match(/bson|bson-ext/);
+        });
+
+        it('collects the tags correctly', function() {
+          expect(task.tags).to.deep.equal(['test']);
         });
       });
     }
