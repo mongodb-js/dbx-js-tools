@@ -215,7 +215,8 @@ describe('Task', function () {
         operation: 'deserialize',
         warmup: 1,
         iterations: 1,
-        options
+        options,
+        tags: ['test', 'test2']
       });
 
       task.result = {
@@ -229,6 +230,10 @@ describe('Task', function () {
     it('returns results as an object', async function () {
       expect(results.info).to.haveOwnProperty('test_name', task.testName);
       expect(results.info).to.haveOwnProperty('args');
+    });
+
+    it('returns the tags in the info.tags field', function () {
+      expect(results.info.tags).to.deep.equal(['test', 'test2']);
     });
 
     it('returns options provided in constructor in the info.args field', function () {
