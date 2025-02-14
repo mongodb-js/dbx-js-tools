@@ -119,6 +119,7 @@ export class Task {
     const perfSendResults: PerfSendResult = {
       info: {
         test_name: this.testName,
+        tags: this.benchmark.tags,
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,
