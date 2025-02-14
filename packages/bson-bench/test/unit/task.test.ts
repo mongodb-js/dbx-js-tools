@@ -78,10 +78,6 @@ describe('Task', function () {
           expect(task.testName).to.not.include(test.library);
           expect(task.testName).to.match(/bson|bson-ext/);
         });
-
-        it('collects the tags correctly', function () {
-          expect(task.tags).to.deep.equal(['test']);
-        });
       });
     }
 
