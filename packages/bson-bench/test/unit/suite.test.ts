@@ -1,13 +1,18 @@
 import { expect } from 'chai';
 import { readFile } from 'fs/promises';
 
-import { Suite } from '../../lib';
+import { Suite, Task } from '../../lib';
 import { exists } from '../../src/utils';
 import { clearTestedDeps } from '../utils';
 
 describe('Suite', function () {
-  beforeEach(clearTestedDeps);
-  after(clearTestedDeps);
+  beforeEach(async function () {
+    await clearTestedDeps(Task.packageInstallLocation);
+  });
+
+  after(async function () {
+    await clearTestedDeps(Task.packageInstallLocation);
+  });
 
   describe('#task()', function () {
     it('returns the Suite it was called on', function () {
@@ -83,7 +88,8 @@ describe('Suite', function () {
         warmup: 10,
         iterations: 10,
         library: 'bson@5.0.0',
-        options: {}
+        options: {},
+        tags: ['test']
       };
       suite
         .task({

@@ -1,5 +1,6 @@
 import * as BSON from 'bson';
 import { readFileSync } from 'fs';
+import { join } from 'path';
 import { performance } from 'perf_hooks';
 import * as process from 'process';
 
@@ -12,20 +13,34 @@ import {
   type RunBenchmarkMessage
 } from './common';
 
-function reportResultAndQuit(result: BenchmarkResult) {
-  if (process.send) process?.send({ type: 'returnResult', result });
+function exit(code: number) {
   process.disconnect();
-  process.exit(0);
+  process.exit(code);
+}
+
+function reportResultAndQuit(result: BenchmarkResult) {
+  if (process.send) {
+    process.send({ type: 'returnResult', result }, null, {}, () => exit(0));
+    return;
+  }
+  exit(0);
 }
 
 function reportErrorAndQuit(error: Error) {
-  if (process.send)
-    process.send({
-      type: 'returnError',
-      error
-    });
-  process.disconnect();
-  process.exit(1);
+  if (process.send) {
+    process.send(
+      {
+        type: 'returnError',
+        error
+      },
+      null,
+      {},
+      () => exit(0)
+    );
+    return;
+  }
+
+  exit(1);
 }
 
 function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) {
@@ -102,10 +117,12 @@ function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) 
 
 function listener(message: RunBenchmarkMessage) {
   if (message.type === 'runBenchmark') {
-    const packageSpec = new Package(message.benchmark.library);
+    const packageSpec = new Package(message.benchmark.library, message.benchmark.installLocation);
     let bson: BSONLib;
     try {
-      bson = require(packageSpec.computedModuleName);
+      bson = require(
+        join(message.benchmark.installLocation, 'node_modules', packageSpec.computedModuleName)
+      );
     } catch (error) {
       reportErrorAndQuit(error as Error);
       return;

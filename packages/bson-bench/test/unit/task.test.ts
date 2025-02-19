@@ -1,14 +1,22 @@
 import { expect } from 'chai';
 import { rm } from 'fs/promises';
+import * as path from 'path';
 
 import { Task } from '../../lib/task';
 import { type BenchmarkSpecification, type PerfSendResult } from '../../src/common';
 import { exists } from '../../src/utils';
 import { clearTestedDeps } from '../utils';
 
+const LOCAL_BSON = path.join(__dirname, '..', '..', 'node_modules', 'bson');
+
 describe('Task', function () {
-  beforeEach(clearTestedDeps);
-  after(clearTestedDeps);
+  beforeEach(async function () {
+    await clearTestedDeps(Task.packageInstallLocation);
+  });
+
+  after(async function () {
+    await clearTestedDeps(Task.packageInstallLocation);
+  });
 
   const BSON_PATH = process.env.BSON_PATH;
   const BSON_EXT_PATH = process.env.BSON_EXT_PATH;
@@ -18,6 +26,7 @@ describe('Task', function () {
     'bson@1.1.6',
     'bson@5.0.0',
     'bson#v6.1.0',
+    `bson:${LOCAL_BSON}`,
     'bson-ext@4.0.0',
     'bson-ext#c1284d1'
   ];
@@ -33,7 +42,8 @@ describe('Task', function () {
           operation,
           warmup: 100,
           iterations: 100,
-          options: {}
+          options: {},
+          tags: ['test']
         }
       ];
     })
@@ -42,6 +52,12 @@ describe('Task', function () {
   context('#run()', function () {
     for (const test of testTable) {
       context(`${test.operation} with library specifier: ${test.library}`, function () {
+        let task;
+
+        beforeEach(function () {
+          task = new Task(test);
+        });
+
         it('completes successfully', async function () {
           if (
             Number(process.versions.node.split('.')[0]) >= 20 &&
@@ -50,13 +66,17 @@ describe('Task', function () {
             console.log('Skipping installing bson-ext via git tag on Node 20');
             this.skip();
           }
-          const task = new Task(test);
 
           await task.run();
           for (const child of task.children) {
             expect(child.exitCode).to.not.be.null;
             expect(child.exitCode).to.equal(0);
           }
+        });
+
+        it('strips the tag or commit from the test name', function () {
+          expect(task.testName).to.not.include(test.library);
+          expect(task.testName).to.match(/bson|bson-ext/);
         });
       });
     }
@@ -96,6 +116,71 @@ describe('Task', function () {
         expect(maybeError).to.be.instanceOf(Error);
         expect(maybeError).to.have.property('message', 'failed to serialize input object');
       });
+
+      it('deletes the temp directory', async function () {
+        const task = new Task({
+          documentPath: 'test/documents/array.json',
+          library: 'bson@5',
+          operation: 'deserialize',
+          warmup: 100,
+          iterations: 100,
+          options: {}
+        });
+
+        // bson throws error when passed array as top-level input
+        const maybeError = await task.run().catch(e => e);
+
+        expect(maybeError).to.be.instanceOf(Error);
+        expect(maybeError).to.have.property('message', 'failed to serialize input object');
+
+        const tmpdirExists = await exists(Task.packageInstallLocation);
+        expect(tmpdirExists).to.be.false;
+      });
+    });
+
+    it('creates a temp directory for packages', async function () {
+      const task = new Task({
+        documentPath: 'test/documents/long_largeArray.json',
+        library: 'bson@5',
+        operation: 'deserialize',
+        warmup: 100,
+        iterations: 10000,
+        options: {}
+      });
+
+      const checkForDirectory = async () => {
+        for (let i = 0; i < 10; i++) {
+          if (await exists(Task.packageInstallLocation)) return true;
+        }
+        return false;
+      };
+      const taskRunPromise = task.run().catch(e => e);
+
+      const result = await Promise.race([checkForDirectory(), taskRunPromise]);
+      expect(typeof result).to.equal('boolean');
+      expect(result).to.be.true;
+
+      const taskRunResult = await taskRunPromise;
+      expect(taskRunResult).to.not.be.instanceOf(Error);
+    });
+
+    context('after completing successfully', function () {
+      it('deletes the temp directory', async function () {
+        const task = new Task({
+          documentPath: 'test/documents/long_largeArray.json',
+          library: 'bson@5',
+          operation: 'deserialize',
+          warmup: 100,
+          iterations: 100,
+          options: {}
+        });
+
+        const maybeError = await task.run().catch(e => e);
+        expect(maybeError).to.not.be.instanceOf(Error);
+
+        const tmpdirExists = await exists(Task.packageInstallLocation);
+        expect(tmpdirExists).to.be.false;
+      });
     });
   });
 
@@ -126,7 +211,8 @@ describe('Task', function () {
         operation: 'deserialize',
         warmup: 1,
         iterations: 1,
-        options
+        options,
+        tags: ['test', 'test2']
       });
 
       task.result = {
@@ -138,8 +224,12 @@ describe('Task', function () {
     });
 
     it('returns results as an object', async function () {
-      expect(results.info).to.haveOwnProperty('test_name', task.taskName);
+      expect(results.info).to.haveOwnProperty('test_name', task.testName);
       expect(results.info).to.haveOwnProperty('args');
+    });
+
+    it('returns the tags in the info.tags field', function () {
+      expect(results.info.tags).to.deep.equal(['test', 'test2']);
     });
 
     it('returns options provided in constructor in the info.args field', function () {
@@ -240,12 +330,12 @@ describe('Task', function () {
         options: { promoteLongs: true }
       });
 
-      expectedFileName = `${task.taskName}.json`;
+      expectedFileName = `${task.testName}.json`;
       if (await exists(expectedFileName)) await rm(expectedFileName);
     });
 
     after(async () => {
-      expectedFileName = `${task.taskName}.json`;
+      expectedFileName = `${task.testName}.json`;
       if (await exists(expectedFileName)) await rm(expectedFileName);
     });
 

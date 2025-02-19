@@ -43,10 +43,10 @@ export class Suite {
         (e: Error) => e
       );
       if (result instanceof Error) {
-        console.log(`\t${task.taskName} ✗`);
+        console.log(`\t${task.testName} ✗`);
         this._errors.push({ task, error: result });
       } else {
-        console.log(`\t${task.taskName} ✓`);
+        console.log(`\t${task.testName} ✓`);
         this._results.push(result);
       }
     }

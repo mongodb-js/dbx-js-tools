@@ -1,6 +1,7 @@
 import { type ChildProcess, fork } from 'child_process';
 import { once } from 'events';
-import { writeFile } from 'fs/promises';
+import { mkdir, rm, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
 import * as path from 'path';
 
 import {
@@ -11,28 +12,34 @@ import {
   type PerfSendResult,
   type ResultMessage
 } from './common';
+import { exists } from './utils';
 
 /**
  * An individual benchmark task that runs in its own Node.js process
  */
 export class Task {
   result: BenchmarkResult | undefined;
-  benchmark: BenchmarkSpecification;
+  benchmark: Omit<BenchmarkSpecification, 'installLocation'> & { installLocation: string };
   taskName: string;
+  testName: string;
   /** @internal */
   children: ChildProcess[];
   /** @internal */
   hasRun: boolean;
 
+  static packageInstallLocation: string = path.join(tmpdir(), 'bsonBench');
+
   constructor(benchmarkSpec: BenchmarkSpecification) {
     this.result = undefined;
-    this.benchmark = benchmarkSpec;
     this.children = [];
     this.hasRun = false;
+    this.benchmark = { ...benchmarkSpec, installLocation: Task.packageInstallLocation };
 
     this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${
       this.benchmark.operation
     }_${this.benchmark.library}`;
+
+    this.testName = this.taskName.substring(0, this.taskName.search(/#|@|:/));
   }
 
   /**
@@ -111,7 +118,8 @@ export class Task {
 
     const perfSendResults: PerfSendResult = {
       info: {
-        test_name: this.taskName,
+        test_name: this.testName,
+        tags: this.benchmark.tags,
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,
@@ -171,31 +179,41 @@ export class Task {
 
     // install required modules before running child process as new Node processes need to know that
     // it exists before they can require it.
-    const pack = new Package(this.benchmark.library);
-    if (!pack.check()) await pack.install();
-    // spawn child process
-    const child = fork(`${__dirname}/base`, {
-      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-      serialization: 'advanced'
-    });
-    child.send({ type: 'runBenchmark', benchmark: this.benchmark });
-    this.children.push(child);
+    if (!(await exists(Task.packageInstallLocation))) {
+      await mkdir(Task.packageInstallLocation);
+    }
 
-    // listen for results or error
-    const resultOrError: ResultMessage | ErrorMessage = (await once(child, 'message'))[0];
+    try {
+      const pack = new Package(this.benchmark.library, Task.packageInstallLocation);
+      if (!pack.check()) await pack.install();
+      // spawn child process
+      const child = fork(`${__dirname}/base`, {
+        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+        serialization: 'advanced'
+      });
+      child.send({ type: 'runBenchmark', benchmark: this.benchmark });
+      this.children.push(child);
 
-    // wait for child to close
-    await once(child, 'exit');
+      // listen for results or error
+      const resultOrErrorPromise = once(child, 'message');
+      // Wait for process to exit
+      const exit = once(child, 'exit');
 
-    this.hasRun = true;
-    switch (resultOrError.type) {
-      case 'returnResult':
-        this.result = resultOrError.result;
-        return resultOrError.result;
-      case 'returnError':
-        throw resultOrError.error;
-      default:
-        throw new Error('Unexpected result returned from child process');
+      const resultOrError: ResultMessage | ErrorMessage = (await resultOrErrorPromise)[0];
+      await exit;
+
+      this.hasRun = true;
+      switch (resultOrError.type) {
+        case 'returnResult':
+          this.result = resultOrError.result;
+          return resultOrError.result;
+        case 'returnError':
+          throw resultOrError.error;
+        default:
+          throw new Error('Unexpected result returned from child process');
+      }
+    } finally {
+      await rm(Task.packageInstallLocation, { recursive: true, force: true });
     }
   }
 }
