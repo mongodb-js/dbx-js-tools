@@ -7,7 +7,7 @@ import { type BenchmarkSpecification, type PerfSendResult } from '../../src/comm
 import { exists } from '../../src/utils';
 import { clearTestedDeps } from '../utils';
 
-const LOCAL_BSON = path.join(__dirname, '..', '..', 'node_modules', 'bson');
+const LOCAL_BSON = path.join(__dirname, '..', '..', '..', '..', 'node_modules', 'bson');
 
 describe('Task', function () {
   beforeEach(async function () {
