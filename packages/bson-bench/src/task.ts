@@ -212,7 +212,7 @@ export class Task {
           throw new Error('Unexpected result returned from child process');
       }
     } finally {
-      await rm(Task.packageInstallLocation, { recursive: true, force: true });
+      // await rm(Task.packageInstallLocation, { recursive: true, force: true });
     }
   }
 }
