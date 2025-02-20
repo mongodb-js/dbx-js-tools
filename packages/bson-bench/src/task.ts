@@ -27,7 +27,7 @@ export class Task {
   /** @internal */
   hasRun: boolean;
 
-  static packageInstallLocation: string = path.join(tmpdir(), 'bsonBench');
+  static packageInstallLocation: string = path.resolve(__dirname, '..');
 
   constructor(benchmarkSpec: BenchmarkSpecification) {
     this.result = undefined;
@@ -35,9 +35,8 @@ export class Task {
     this.hasRun = false;
     this.benchmark = { ...benchmarkSpec, installLocation: Task.packageInstallLocation };
 
-    this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${
-      this.benchmark.operation
-    }_${this.benchmark.library}`;
+    this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${this.benchmark.operation
+      }_${this.benchmark.library}`;
 
     this.testName = this.taskName.substring(0, this.taskName.search(/#|@|:/));
   }
@@ -64,8 +63,8 @@ export class Task {
     const medianThroughputMBps: number =
       throughputMBps.length % 2 === 0
         ? (throughputMBps[throughputMBps.length / 2] +
-            throughputMBps[throughputMBps.length / 2 - 1]) /
-          2
+          throughputMBps[throughputMBps.length / 2 - 1]) /
+        2
         : throughputMBps[throughputMBps.length / 2];
     const maxThroughputMBps = throughputMBps[throughputMBps.length - 1];
     const minThroughputMBps = throughputMBps[0];
@@ -102,7 +101,7 @@ export class Task {
             output['utf8Validation'] = /^bson-ext/.test(this.benchmark.library)
               ? 1
               : // if value of boolean for js-bson, convert to number, otherwise assume true
-                typeof o[key]['utf8'] === 'boolean'
+              typeof o[key]['utf8'] === 'boolean'
                 ? Number(o[key]['utf8'])
                 : 1;
             break;
