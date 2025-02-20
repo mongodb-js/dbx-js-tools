@@ -5,20 +5,20 @@ import { join } from 'path';
 import { exists } from './utils';
 
 // handle normal npm package regex
-export const NPM_PACKAGE_REGEX = /(bson-ext|bson)@((\d+(\.\d+)?(\.\d+)?)|latest)/;
+export const NPM_PACKAGE_REGEX = /(bson)@((\d+(\.\d+)?(\.\d+)?)|latest)/;
 // handle git tags/commits
-export const GIT_PACKAGE_REGEX = /(bson-ext|bson)#(.+)/;
+export const GIT_PACKAGE_REGEX = /(bson)#(.+)/;
 // handle local package
-export const LOCAL_PACKAGE_REGEX = /(bson-ext|bson):(.+)/;
+export const LOCAL_PACKAGE_REGEX = /(bson):(.+)/;
 
 /**
- * The Package class represents the bson or bson-ext package to be tested
+ * The Package class represents the bson package to be tested
  * This package can be an npm package, a git repository or a local package
  **/
 export class Package {
   type: 'npm' | 'git' | 'local';
   // bson library to install
-  library: 'bson' | 'bson-ext';
+  library: 'bson';
   computedModuleName: string;
   // semver version specification
   npmVersion?: string;
@@ -33,17 +33,17 @@ export class Package {
     let match: RegExpExecArray | null;
     if ((match = NPM_PACKAGE_REGEX.exec(libSpec))) {
       this.type = 'npm';
-      this.library = match[1] as 'bson' | 'bson-ext';
+      this.library = match[1] as 'bson';
       this.npmVersion = match[2];
       this.computedModuleName = `${this.library}-${this.npmVersion}`;
     } else if ((match = GIT_PACKAGE_REGEX.exec(libSpec))) {
       this.type = 'git';
-      this.library = match[1] as 'bson' | 'bson-ext';
+      this.library = match[1] as 'bson';
       this.gitCommitish = match[2];
       this.computedModuleName = `${this.library}-git-${this.gitCommitish}`;
     } else if ((match = LOCAL_PACKAGE_REGEX.exec(libSpec))) {
       this.type = 'local';
-      this.library = match[1] as 'bson' | 'bson-ext';
+      this.library = match[1] as 'bson';
 
       this.localPath = match[2];
       const cleanedLocalPath = this.localPath.replaceAll('/', '_').replaceAll('\\', '_');
@@ -80,9 +80,6 @@ export class Package {
         switch (this.library) {
           case 'bson':
             source = `git://github.com/mongodb/js-bson#${this.gitCommitish}`;
-            break;
-          case 'bson-ext':
-            source = `git://github.com/mongodb-js/bson-ext#${this.gitCommitish}`;
             break;
         }
         break;
@@ -130,7 +127,7 @@ export type BenchmarkSpecification = {
   iterations: number;
   /** Number of iterations that will be run to warm up the V8 engine */
   warmup: number;
-  /** Specifier of the bson or bson-ext library to be used. Can be an npm package, git repository or
+  /** Specifier of the bson library to be used. Can be an npm package, git repository or
    * local package */
   library: string;
   installLocation?: string;

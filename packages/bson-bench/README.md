@@ -1,6 +1,6 @@
 # bson-bench 
 
-This library provides functionality to install and run benchmarks against bson and bson-ext.
+This library provides functionality to install and run benchmarks against bson.
 
 > [!IMPORTANT]
 > This library is **NOT** an official MongoDB product and is meant for internal use only

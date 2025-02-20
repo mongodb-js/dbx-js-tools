@@ -44,7 +44,7 @@ describe('common functionality', function () {
         });
       });
 
-      context('when trying to install an npm package apart from bson or bson-ext', function () {
+      context('when trying to install an npm package apart from bson', function () {
         it('throws an error', function () {
           expect(() => new Package('notBson@1.0.0', installDir)).to.throw(
             Error,
@@ -53,7 +53,7 @@ describe('common functionality', function () {
         });
       });
 
-      context('when trying to install a git package apart from bson or bson-ext', function () {
+      context('when trying to install a git package apart from bson', function () {
         it('throws an error', function () {
           expect(() => new Package('notBson#abcdabcdabcd', installDir)).to.throw(
             Error,
@@ -96,7 +96,7 @@ describe('common functionality', function () {
 
     context('#install()', function () {
       context('when given a correctly formatted npm package that exists', function () {
-        for (const lib of ['bson@6.0.0', 'bson-ext@4.0.0', 'bson@latest', 'bson-ext@latest']) {
+        for (const lib of ['bson@6.0.0', 'bson@latest']) {
           it(`installs ${lib} successfully to the specified install directory`, async function () {
             const pack = new Package(lib, installDir);
             await pack.install();

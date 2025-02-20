@@ -20,16 +20,7 @@ describe('Task', function () {
 
   const BSON_PATH = process.env.BSON_PATH;
   const BSON_EXT_PATH = process.env.BSON_EXT_PATH;
-  const versions = [
-    'bson@6.2.0',
-    'bson@4.0.0',
-    'bson@1.1.6',
-    'bson@5.0.0',
-    'bson#v6.1.0',
-    `bson:${LOCAL_BSON}`,
-    'bson-ext@4.0.0',
-    'bson-ext#c1284d1'
-  ];
+  const versions = ['bson@6.2.0', 'bson@4.0.0', 'bson@5.0.0', 'bson#v6.1.0', `bson:${LOCAL_BSON}`];
   const operations: ('serialize' | 'deserialize')[] = ['serialize', 'deserialize'];
   if (BSON_PATH) versions.push(`bson:${BSON_PATH}`);
   if (BSON_EXT_PATH) versions.push(`bson:${BSON_EXT_PATH}`);
@@ -59,14 +50,6 @@ describe('Task', function () {
         });
 
         it('completes successfully', async function () {
-          if (
-            Number(process.versions.node.split('.')[0]) >= 20 &&
-            /bson-ext#.*/.test(test.library)
-          ) {
-            console.log('Skipping installing bson-ext via git tag on Node 20');
-            this.skip();
-          }
-
           await task.run();
           for (const child of task.children) {
             expect(child.exitCode).to.not.be.null;
@@ -76,7 +59,7 @@ describe('Task', function () {
 
         it('strips the tag or commit from the test name', function () {
           expect(task.testName).to.not.include(test.library);
-          expect(task.testName).to.match(/bson|bson-ext/);
+          expect(task.testName).to.match(/bson/);
         });
       });
     }
@@ -323,7 +306,7 @@ describe('Task', function () {
     before(async () => {
       task = new Task({
         documentPath: 'test/documents/long_largeArray.json',
-        library: 'bson-ext@4.0.0',
+        library: 'bson@4',
         operation: 'deserialize',
         warmup: 100,
         iterations: 100,
