@@ -16,11 +16,11 @@
   "keywords": [],
   "author": "The MongoDB NodeJS Team <dbx-node@mongodb.com>",
   "license": "Apache-2.0",
-  "dependencies": {
-    "bson": "4.7"
-  },
   "directories": {
     "lib": "lib",
     "test": "test"
+  },
+  "devDependencies": {
+    "bson": "4.7"
   }
 }

@@ -1,4 +1,3 @@
-import * as BSON from 'bson';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { performance } from 'perf_hooks';
@@ -56,10 +55,7 @@ function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) 
 
   try {
     if (bson.EJSON) doc = bson.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
-    // NOTE: The BSON version used here is bson@4. This is for compatibility with bson-ext as it is
-    // the only version of the js-bson library explicitly compatible with bson-ext and which does
-    // not result in bson-ext throwing an error when running deserialization tests.
-    else doc = BSON.EJSON.parse(readFileSync(config.documentPath, 'utf8'));
+    else throw new Error('No EJSON parser found');
   } catch (cause) {
     reportErrorAndQuit(new Error('Failed to read test document', { cause }));
     return;
