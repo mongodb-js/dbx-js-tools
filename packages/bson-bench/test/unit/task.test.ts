@@ -25,7 +25,7 @@ describe('Task', function () {
 
   const BSON_PATH = process.env.BSON_PATH;
   const BSON_EXT_PATH = process.env.BSON_EXT_PATH;
-  const versions = ['bson@6.2.0', 'bson@4.0.0', 'bson@5.0.1', 'bson#v6.1.0', `bson:${LOCAL_BSON}`];
+  const versions = ['bson@6.2.0', 'bson@4.0.0', 'bson@5.0.0', 'bson#v6.1.0', `bson:${LOCAL_BSON}`];
   const operations: ('serialize' | 'deserialize')[] = ['serialize', 'deserialize'];
   if (BSON_PATH) versions.push(`bson:${BSON_PATH}`);
   if (BSON_EXT_PATH) versions.push(`bson:${BSON_EXT_PATH}`);
