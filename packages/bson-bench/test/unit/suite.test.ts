@@ -1,19 +1,10 @@
 import { expect } from 'chai';
 import { readFile } from 'fs/promises';
 
-import { Suite, Task } from '../../lib';
+import { Suite } from '../../lib';
 import { exists } from '../../src/utils';
-import { clearTestedDeps } from '../utils';
 
 describe('Suite', function () {
-  beforeEach(async function () {
-    await clearTestedDeps(Task.packageInstallLocation);
-  });
-
-  after(async function () {
-    await clearTestedDeps(Task.packageInstallLocation);
-  });
-
   describe('#task()', function () {
     it('returns the Suite it was called on', function () {
       const suite = new Suite('test');
@@ -78,6 +69,123 @@ describe('Suite', function () {
         expect(await suite.run().catch(e => e)).to.be.instanceOf(Error);
       });
     });
+
+    it('creates a temp directory for packages', async function () {
+      const s = new Suite('test');
+      s.task({
+        documentPath: 'test/documents/long_largeArray.json',
+        library: 'bson@5',
+        operation: 'deserialize',
+        warmup: 100,
+        iterations: 10000,
+        options: {}
+      });
+
+      const checkForDirectory = async () => {
+        for (let i = 0; i < 10; i++) {
+          if (await exists(Suite.packageInstallLocation)) return true;
+        }
+        return false;
+      };
+      const suiteRunPromise = s.run().catch(e => e);
+
+      const result = await Promise.race([checkForDirectory(), suiteRunPromise]);
+      expect(typeof result).to.equal('boolean');
+      expect(result).to.be.true;
+
+      const suiteRunResult = await suiteRunPromise;
+      expect(suiteRunResult).to.not.be.instanceOf(Error);
+    });
+
+    context('after completing successfully', function () {
+      it('deletes the temp directory', async function () {
+        const s = new Suite('test');
+        s.task({
+          documentPath: 'test/documents/long_largeArray.json',
+          library: 'bson@5',
+          operation: 'deserialize',
+          warmup: 100,
+          iterations: 100,
+          options: {}
+        });
+
+        const maybeError = await s.run().catch(e => e);
+        expect(maybeError).to.not.be.instanceOf(Error);
+
+        const tmpdirExists = await exists(Suite.packageInstallLocation);
+        expect(tmpdirExists).to.be.false;
+      });
+    });
+
+    context('after failing', function () {
+      it('deletes the temp directory', async function () {
+        const s = new Suite('test');
+        s.task({
+          documentPath: 'test/documents/array.json',
+          library: 'bson@5',
+          operation: 'deserialize',
+          warmup: 100,
+          iterations: 100,
+          options: {}
+        });
+
+        // bson throws error when passed array as top-level input
+        await s.run();
+
+        const tmpdirExists = await exists(Suite.packageInstallLocation);
+        expect(tmpdirExists).to.be.false;
+      });
+    });
+
+    context('when running multiple tasks', function () {
+      const counts = { makeInstallLocation: 0, cleanUpInstallLocation: 0 };
+      class SuiteCounter extends Suite {
+        constructor(n: string) {
+          super(n);
+        }
+
+        async makeInstallLocation() {
+          counts.makeInstallLocation++;
+          return await super.makeInstallLocation();
+        }
+
+        async cleanUpInstallLocation() {
+          counts.cleanUpInstallLocation++;
+          return await super.cleanUpInstallLocation();
+        }
+      }
+
+      let suite: SuiteCounter;
+      before(async function () {
+        suite = new SuiteCounter('test');
+        const benchmark = {
+          documentPath: 'test/documents/long_largeArray.json',
+          warmup: 10,
+          iterations: 10,
+          library: 'bson@5.0.0',
+          options: {}
+        };
+        suite
+          .task({
+            ...benchmark,
+            operation: 'serialize'
+          })
+          .task({
+            ...benchmark,
+            operation: 'deserialize'
+          });
+
+        await suite.run();
+      });
+
+      it('creates the tmp directory exactly once', async function () {
+        expect(counts.makeInstallLocation).to.equal(1);
+      });
+
+      it('deletes the tmp directory exactly once', async function () {
+        expect(counts.cleanUpInstallLocation).to.equal(1);
+      });
+    });
   });
 
   describe('#writeResults()', function () {
@@ -87,7 +195,7 @@ describe('Suite', function () {
         documentPath: 'test/documents/long_largeArray.json',
         warmup: 10,
         iterations: 10,
-        library: 'bson@5.0.0',
+        library: 'bson@5.0.1',
         options: {},
         tags: ['test']
       };
