@@ -175,12 +175,12 @@ export type PerfSendMetricType =
 export type PerfSendResult = {
   info: {
     test_name: string;
-    tags?: string[];
     args: Record<string, number>;
   };
   metrics: {
     name: string;
     value: number;
+    metadata: { tags?: string[] };
     type?: PerfSendMetricType;
     version?: number;
   }[];

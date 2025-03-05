@@ -151,8 +151,10 @@ describe('Task', function () {
       expect(results.info).to.haveOwnProperty('args');
     });
 
-    it('returns the tags in the info.tags field', function () {
-      expect(results.info.tags).to.deep.equal(['test', 'test2']);
+    it('returns the tags in the info.metrics.metadata field', function () {
+      for (const m of results.metrics) {
+        expect(m.metadata.tags).to.deep.equal(['test', 'test2']);
+      }
     });
 
     it('returns options provided in constructor in the info.args field', function () {
