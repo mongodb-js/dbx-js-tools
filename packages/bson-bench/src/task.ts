@@ -1,7 +1,6 @@
 import { type ChildProcess, fork } from 'child_process';
 import { once } from 'events';
-import { mkdir, rm, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile } from 'fs/promises';
 import * as path from 'path';
 
 import {
@@ -12,7 +11,7 @@ import {
   type PerfSendResult,
   type ResultMessage
 } from './common';
-import { exists } from './utils';
+import { Suite } from './suite';
 
 /**
  * An individual benchmark task that runs in its own Node.js process
@@ -27,13 +26,11 @@ export class Task {
   /** @internal */
   hasRun: boolean;
 
-  static packageInstallLocation: string = path.join(tmpdir(), 'bsonBench');
-
   constructor(benchmarkSpec: BenchmarkSpecification) {
     this.result = undefined;
     this.children = [];
     this.hasRun = false;
-    this.benchmark = { ...benchmarkSpec, installLocation: Task.packageInstallLocation };
+    this.benchmark = { ...benchmarkSpec, installLocation: Suite.packageInstallLocation };
 
     this.taskName = `${path.basename(this.benchmark.documentPath, 'json')}_${
       this.benchmark.operation
@@ -172,43 +169,33 @@ export class Task {
   async run(): Promise<BenchmarkResult> {
     if (this.hasRun && this.result) return this.result;
 
-    // install required modules before running child process as new Node processes need to know that
-    // it exists before they can require it.
-    if (!(await exists(Task.packageInstallLocation))) {
-      await mkdir(Task.packageInstallLocation);
-    }
+    const pack = new Package(this.benchmark.library, Suite.packageInstallLocation);
+    if (!pack.check()) await pack.install();
+    // spawn child process
+    const child = fork(`${__dirname}/base`, {
+      stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
+      serialization: 'advanced'
+    });
+    child.send({ type: 'runBenchmark', benchmark: this.benchmark });
+    this.children.push(child);
 
-    try {
-      const pack = new Package(this.benchmark.library, Task.packageInstallLocation);
-      if (!pack.check()) await pack.install();
-      // spawn child process
-      const child = fork(`${__dirname}/base`, {
-        stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
-        serialization: 'advanced'
-      });
-      child.send({ type: 'runBenchmark', benchmark: this.benchmark });
-      this.children.push(child);
+    // listen for results or error
+    const resultOrErrorPromise = once(child, 'message');
+    // Wait for process to exit
+    const exit = once(child, 'exit');
 
-      // listen for results or error
-      const resultOrErrorPromise = once(child, 'message');
-      // Wait for process to exit
-      const exit = once(child, 'exit');
+    const resultOrError: ResultMessage | ErrorMessage = (await resultOrErrorPromise)[0];
+    await exit;
 
-      const resultOrError: ResultMessage | ErrorMessage = (await resultOrErrorPromise)[0];
-      await exit;
-
-      this.hasRun = true;
-      switch (resultOrError.type) {
-        case 'returnResult':
-          this.result = resultOrError.result;
-          return resultOrError.result;
-        case 'returnError':
-          throw resultOrError.error;
-        default:
-          throw new Error('Unexpected result returned from child process');
-      }
-    } finally {
-      await rm(Task.packageInstallLocation, { recursive: true, force: true });
+    this.hasRun = true;
+    switch (resultOrError.type) {
+      case 'returnResult':
+        this.result = resultOrError.result;
+        return resultOrError.result;
+      case 'returnError':
+        throw resultOrError.error;
+      default:
+        throw new Error('Unexpected result returned from child process');
     }
   }
 }

@@ -1,7 +1,10 @@
-import { writeFile } from 'fs/promises';
+import { mkdir, rm, writeFile } from 'fs/promises';
+import { tmpdir } from 'os';
+import * as path from 'path';
 
 import { type BenchmarkResult, type BenchmarkSpecification, type PerfSendResult } from './common';
 import { Task } from './task';
+import { exists } from './utils';
 
 /**
  * A collection of related Tasks
@@ -10,8 +13,10 @@ export class Suite {
   tasks: Task[];
   name: string;
   hasRun: boolean;
+
   _errors: { task: Task; error: Error }[];
   private _results: PerfSendResult[];
+  static packageInstallLocation: string = path.join(tmpdir(), 'bsonBench');
 
   constructor(name: string) {
     this.name = name;
@@ -29,6 +34,16 @@ export class Suite {
     return this;
   }
 
+  async makeInstallLocation() {
+    if (!(await exists(Suite.packageInstallLocation))) {
+      await mkdir(Suite.packageInstallLocation);
+    }
+  }
+
+  async cleanUpInstallLocation() {
+    await rm(Suite.packageInstallLocation, { recursive: true, force: true });
+  }
+
   /**
    * Run all Tasks. Throws error if suite has already been run
    * Collects all results and thrown errors from child Tasks
@@ -36,26 +51,34 @@ export class Suite {
   async run(): Promise<void> {
     if (this.hasRun) throw new Error('Suite has already been run');
 
-    console.log(`Suite: ${this.name}`);
-    for (const task of this.tasks) {
-      const result = await task.run().then(
-        (_r: BenchmarkResult) => task.getResults(),
-        (e: Error) => e
-      );
-      if (result instanceof Error) {
-        console.log(`\t${task.testName} ✗`);
-        this._errors.push({ task, error: result });
-      } else {
-        console.log(`\t${task.testName} ✓`);
-        this._results.push(result);
+    try {
+      // install required modules before running child process as new Node processes need to know that
+      // it exists before they can require it.
+      await this.makeInstallLocation();
+
+      console.log(`Suite: ${this.name}`);
+      for (const task of this.tasks) {
+        const result = await task.run().then(
+          (_r: BenchmarkResult) => task.getResults(),
+          (e: Error) => e
+        );
+        if (result instanceof Error) {
+          console.log(`\t${task.testName} ✗`);
+          this._errors.push({ task, error: result });
+        } else {
+          console.log(`\t${task.testName} ✓`);
+          this._results.push(result);
+        }
       }
-    }
 
-    for (const { task, error } of this._errors) {
-      console.log(`Task ${task.taskName} failed with Error '${error.message}'`);
-    }
+      for (const { task, error } of this._errors) {
+        console.log(`Task ${task.taskName} failed with Error '${error.message}'`);
+      }
 
-    this.hasRun = true;
+      this.hasRun = true;
+    } finally {
+      await this.cleanUpInstallLocation();
+    }
   }
 
   /**
