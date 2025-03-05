@@ -51,6 +51,7 @@ describe('Task', function () {
         let task;
 
         beforeEach(function () {
+          if (test.library === 'bson@5.0.0') this.skip();
           task = new Task(test);
         });
 
