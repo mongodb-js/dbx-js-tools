@@ -108,10 +108,10 @@ export class Task {
     };
     const optionsWithNumericFields = convertOptions(this.benchmark.options);
 
+    const metadata = { tags: this.benchmark.tags };
     const perfSendResults: PerfSendResult = {
       info: {
         test_name: this.testName,
-        tags: this.benchmark.tags,
         args: {
           warmup: this.benchmark.warmup,
           iterations: this.benchmark.iterations,
@@ -122,27 +122,32 @@ export class Task {
         {
           name: 'mean_megabytes_per_second',
           type: 'MEAN',
-          value: meanThroughputMBps
+          value: meanThroughputMBps,
+          metadata
         },
         {
           name: 'median_megabytes_per_second',
           type: 'MEDIAN',
-          value: medianThroughputMBps
+          value: medianThroughputMBps,
+          metadata
         },
         {
           name: 'min_megabytes_per_second',
           type: 'MIN',
-          value: minThroughputMBps
+          value: minThroughputMBps,
+          metadata
         },
         {
           name: 'max_megabytes_per_second',
           type: 'MAX',
-          value: maxThroughputMBps
+          value: maxThroughputMBps,
+          metadata
         },
         {
           name: 'stddev_megabytes_per_second',
           type: 'STANDARD_DEVIATION',
-          value: throughputMBpsStddev
+          value: throughputMBpsStddev,
+          metadata
         }
       ]
     };
