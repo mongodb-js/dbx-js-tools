@@ -180,7 +180,7 @@ export type PerfSendResult = {
   metrics: {
     name: string;
     value: number;
-    metadata: { tags?: string[] };
+    metadata: { tags?: string[]; improvement_direction?: 'up' | 'down' };
     type?: PerfSendMetricType;
     version?: number;
   }[];
