@@ -2,8 +2,7 @@
   "name": "dbx-js-tools",
   "private": true,
   "workspaces": [
-    "packages/bson-bench",
-    "packages/driver-bench"
+    "packages/bson-bench"
   ],
   "devDependencies": {
     "@tsconfig/node16": "^16.1.3",
