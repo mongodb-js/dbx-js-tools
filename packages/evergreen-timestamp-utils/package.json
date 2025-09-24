@@ -6,8 +6,7 @@
   "main": "./index.mjs",
   "scripts": {},
   "engines": {
-    "node": ">=16.20.1",
-    "npm": ">=9.0.0"
+    "node": ">=20.19.0"
   },
   "keywords": [],
   "author": "The MongoDB NodeJS Team <dbx-node@mongodb.com>",
