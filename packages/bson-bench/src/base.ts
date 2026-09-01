@@ -13,13 +13,13 @@ import {
 } from './common';
 
 function exit(code: number) {
-  process.disconnect();
+  process.disconnect?.();
   process.exit(code);
 }
 
 function reportResultAndQuit(result: BenchmarkResult) {
   if (process.send) {
-    process.send({ type: 'returnResult', result }, null, {}, () => exit(0));
+    process.send({ type: 'returnResult', result }, undefined, {}, () => exit(0));
     return;
   }
   exit(0);
@@ -32,7 +32,7 @@ function reportErrorAndQuit(error: Error) {
         type: 'returnError',
         error
       },
-      null,
+      undefined,
       {},
       () => exit(0)
     );
@@ -44,9 +44,8 @@ function reportErrorAndQuit(error: Error) {
 
 function run(bson: BSONLib | ConstructibleBSON, config: BenchmarkSpecification) {
   let fn:
-    | ((b: Uint8Array, options?: any) => any)
-    | ((o: any, options?: any) => Uint8Array)
-    | undefined = undefined;
+    ((b: Uint8Array, options?: any) => any) | ((o: any, options?: any) => Uint8Array) | undefined =
+    undefined;
   let documentSizeBytes: number;
   let doc: any;
 
