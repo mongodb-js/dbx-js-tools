@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { mkdir, rm } from 'fs/promises';
+import { createRequire } from 'module';
 import * as path from 'path';
 
 import { Suite } from '../../lib/suite';
@@ -8,7 +9,9 @@ import { type BenchmarkSpecification, type PerfSendResult } from '../../src/comm
 import { exists } from '../../src/utils';
 import { clearTestedDeps } from '../utils';
 
-const LOCAL_BSON = path.join(__dirname, '..', '..', 'node_modules', 'bson');
+// bson's entry point lives in lib/, so its package root is one directory up. It can be
+// installed either at the workspace root or under this package, depending on hoisting.
+const LOCAL_BSON = path.join(path.dirname(createRequire(__filename).resolve('bson')), '..');
 
 describe('Task', function () {
   before(async function () {
