@@ -17,6 +17,9 @@ updates:
         versions: [">=4.0.0"]
       # we ignore TS as a part of quarterly dependency updates.
       - dependency-name: "typescript"
+      # ESLint 10 only reads eslint.config.* files, and this repo uses .eslintrc.json.
+      - dependency-name: "eslint"
+        versions: [">=10.0.0"]
     versioning-strategy: increase
 
     groups:
