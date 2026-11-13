@@ -20,6 +20,6 @@
     "test": "test"
   },
   "devDependencies": {
-    "bson": "7.3"
+    "bson": "^7.3.4"
   }
 }
